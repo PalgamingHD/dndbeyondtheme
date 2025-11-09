@@ -1,0 +1,222 @@
+/* Header sidebar styles */
+.headerSidebar {
+  color: #eeeeee;
+  padding: 0px;
+  text-align: center;
+  font-size: 19px;
+  margin-top: 18px;
+  margin-bottom: 0px;
+}
+
+/* Collapsible Header Styles */
+.collapsible {
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  background-color: #33333388;
+  color: #eeeeee !important;
+  padding: 10px;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+  
+.collapsible:hover,
+.collapsible.active {
+  background-color: #44444488;
+  color: #eeeeee !important;
+}
+  
+/* Content Container Styles */
+.content {
+  padding: 0px;
+  padding-top: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #22222288;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+/* When active, allow the content to expand */
+.content.active {
+  max-height: 1000px;
+  /* justify-content: center; */
+}
+
+#color-picker-container.active {
+  max-height: 300px !important; /* Adjust this value as needed */
+  overflow-y: auto !important;
+}
+
+  
+/* Input File Styles */
+#backdropFileInput {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Save Button Styles */
+.button-container {
+  display: flex;
+  justify-content: center; /* Adjusts the space between the buttons */
+  gap: 10px; /* Optional: Adds space between the buttons */
+}
+
+/* Ensure buttons take up equal space */
+button.save-btn, button.remove-btn {
+  flex: 1;
+}
+
+button.save-btn {
+  background-color: #28a745;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  flex-grow: 0;
+}
+
+button.save-btn:hover {
+  background-color: #218838;
+}
+
+/* Remove Button Styles */
+button.remove-btn {
+  background-color: #dc3545;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  flex-grow: 0;
+}
+
+button.remove-btn:hover {
+  background-color: #c82333;
+}
+
+/* Remove Button Styles */
+button.rainbow-btn {
+  position: relative;
+  /* float: right; */
+  background-color: #3b353688;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+button.rainbow-btn[value="1"]:hover {
+  background: linear-gradient(90deg, rgba(255, 0, 0), rgba(255, 165, 0), rgba(255, 255, 0), rgba(0, 128, 0), rgba(0, 0, 255), rgba(75, 0, 130), rgba(238, 130, 238), rgba(255, 0, 0), rgba(255, 165, 0));
+  background-size: 400% 400%;
+  animation: rainbow 5s linear infinite;
+}
+button.rainbow-btn[value="0"]:hover {
+  background-color: #3b353688;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+
+/* Parent element */
+.customizerSidebar {
+  position: relative;
+  width: 100%; /* Adjust as needed */
+  height: 100%; /* Adjust as needed */
+}
+
+.ct-sidebar2-box{
+  height: 200px;
+  padding: 0px 20px;
+  width: 281px;
+  padding-right: 23px;
+  padding-top: 37px;
+}
+/* Child elements */
+.ct-section--customizerSidebar {
+  position: relative;
+  width: 90%;
+  min-height: auto;
+  z-index: 2;
+  color: #eeeeee !important;
+}
+
+
+.ddbc-box-background--customizerSidebar {
+  position: absolute;
+  top: 0vh;
+  left: -18px;
+  width: 281px; /* Adjusted to match viewBox width */
+  height: 800px; /* Adjusted to match viewBox height */
+  background-color: rgba(0, 0, 0, 0.5); /* Example background */
+  z-index: 1; /* Keep it behind */
+  transition: height 0.3s ease-in-out;
+  background: #ff66ff00;
+  display: flex;
+  /* direction: row; */
+  /* justify-content: center; */
+  /* align-items: center; */
+}
+
+.ddbc-svg.up, .ddbc-svg.down, .ddbc-svg.center {
+  position: absolute;
+  width: 90%;
+}
+.ddbc-svg.down{
+  bottom: 264px;
+  transition: 0.2s ease;
+}
+.ddbc-svg.center{
+  bottom: 16px !important;
+  display:none;
+}
+
+.bo.Down, .bo.Up, .bo.Center{
+  fill: var(--theme-color);
+}
+
+#resetBtn, #rainbowModeBtn{
+  flex-grow: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+button#closeArrowSide {
+  cursor:pointer;
+  width: 20px !important;
+  height: 24px !important;
+  z-index: 1000005;
+  flex-grow: 0;
+  flex-shrink: 0;
+  fill: var(--ttui_grey-50);
+  color-scheme: dark;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  outline: 0;
+  font-family: Roboto, Helvetica, sans-serif;
+  font-size: 22px;
+  margin: 0px;
+  vertical-align: baseline;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: .6;
+}
+button#closeArrowSide:hover {
+  fill: #ffffff !important;
+}

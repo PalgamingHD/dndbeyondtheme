@@ -1,0 +1,36 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "manifest_version": 3,
+  "name": "D&D Beyond Backdrop and Colors Replacer",
+  "version": "2.0.1.1",
+  "description": "Replaces character backdrop images and colors.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.dndbeyond.com/characters/*"],
+  "action": {
+      "default_icon": {
+          "16": "icon.png",
+          "48": "icon.png",
+          "128": "icon.png"
+      }
+  },
+  "content_scripts": [
+      {
+          "matches": ["https://www.dndbeyond.com/characters/*"],
+          "run_at": "document_idle",
+          "js": ["content.js","sidebar.js"]
+      }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["button.html","button.css", "sidebar.html", "styles.css"],
+      "matches": ["https://www.dndbeyond.com/*"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "backdrop-replacer@yourdomain.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}
