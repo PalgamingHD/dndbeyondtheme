@@ -364,7 +364,7 @@ function injectFileSelector() {
           const hexWithAlpha = `#${hex.slice(1)}${alphaHex}`;
           // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
           saveColor(hexWithAlpha, 'header');
-          applyHeaderBackgroundColor(hexWithAlpha);
+          applyHeaderColor(hexWithAlpha);
         }
         function updateBorderColor() {
           const hex = colorInputBo.value;

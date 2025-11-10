@@ -225,7 +225,7 @@ function applyBackgroundColor(newColor, num) {
 }
 window.applyBackgroundColor = applyBackgroundColor;
 
-function applyHeaderBackgroundColor(newColor) {
+function applyHeaderColor(newColor) {
   const color = newColor.slice(0, -2); // keep your pattern
 
   // 1) Keep (or drop) this if you DO want the inner button bar colored:
@@ -270,7 +270,7 @@ function applyHeaderBackgroundColor(newColor) {
   `;
 }
 
-window.applyHeaderBackgroundColor = applyHeaderBackgroundColor;
+window.applyHeaderColor = applyHeaderColor;
 
 
 // Apply Box Border Color

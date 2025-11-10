@@ -165,7 +165,7 @@ button.rainbow-btn[value="0"]:hover {
   top: 0;
   left: -18px;
   width: 281px;
-  height: 1000px; 
+  height: 1100px; 
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1;
   transition: height 0.3s ease-in-out;
