@@ -160,22 +160,17 @@ button.rainbow-btn[value="0"]:hover {
   z-index: 2;
   color: #eeeeee !important;
 }
-
-
 .ddbc-box-background--customizerSidebar {
   position: absolute;
-  top: 0vh;
+  top: 0;
   left: -18px;
-  width: 281px; /* Adjusted to match viewBox width */
-  height: 800px; /* Adjusted to match viewBox height */
-  background-color: rgba(0, 0, 0, 0.5); /* Example background */
-  z-index: 1; /* Keep it behind */
+  width: 281px;
+  height: 1000px; 
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
   transition: height 0.3s ease-in-out;
   background: #ff66ff00;
   display: flex;
-  /* direction: row; */
-  /* justify-content: center; */
-  /* align-items: center; */
 }
 
 .ddbc-svg.up, .ddbc-svg.down, .ddbc-svg.center {

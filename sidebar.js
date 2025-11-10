@@ -22,10 +22,12 @@ function injectFileSelector() {
     container.style.position = "absolute";
     container.style.right = "0";
     container.style.width = "300px";
-    container.style.height = "200vh";
     container.style.padding = "20px";
+    container.style.height = "calc(130vh - 3.5vh)";
+   container.style.maxHeight = "calc(100vh - 3.5vh)";
+   container.style.boxSizing = "border-box";
+   container.style.overflowY = "auto";
     container.style.borderRadius = "0";
-    container.style.overflowY = "auto";
     container.style.transform = "translateX(100%)"; // Start off-screen
     container.style.transition = "transform 0.5s ease"; // Add transition for sliding effect
   
