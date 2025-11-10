@@ -22,7 +22,7 @@ function injectFileSelector() {
     container.style.position = "absolute";
     container.style.right = "0";
     container.style.width = "300px";
-    container.style.height = "95%";
+    container.style.height = "200vh";
     container.style.padding = "20px";
     container.style.borderRadius = "0";
     container.style.overflowY = "auto";
@@ -119,8 +119,11 @@ function injectFileSelector() {
   
         // Re-bind event listeners for controls after HTML injection
         const fileInputBd = innerCon.querySelector("#backdropFileInput");
+         const frameFileInputBd = innerCon.querySelector("#frameFileInput");
         const colorInputBg = innerCon.querySelector("#colorInputBg");
         const alphaInputBg = innerCon.querySelector("#alphaInputBg");
+        const colorInputHd = innerCon.querySelector("#colorInputHd");
+        const alphaInputHd = innerCon.querySelector("#alphaInputHd");
         const colorInputBo = innerCon.querySelector("#colorInputBo");
         const alphaInputBo = innerCon.querySelector("#alphaInputBo");
         const colorInputAc = innerCon.querySelector("#colorInputAc");
@@ -128,9 +131,12 @@ function injectFileSelector() {
         const colorText0 = innerCon.querySelector("#colorText0");
   
         const saveBtnBd = innerCon.querySelector("#saveBackdropBtn");
+        const frameSaveBtnBd = innerCon.querySelector("#saveFrameBtn");
 
         const removeBtnBd = innerCon.querySelector("#removeBackdropBtn");
+      const frameRemoveBtnBd = innerCon.querySelector("#removeFrameBtn");
         const removeBtnBg = innerCon.querySelector("#removeColorBg");
+         const removeBtnHd = innerCon.querySelector("#removeColorHd");
         const removeBtnBo = innerCon.querySelector("#removeColorBo");
         const removeBtnAc = innerCon.querySelector("#removeColorAc");
         const removeText1 = innerCon.querySelector("#removeText1");
@@ -162,6 +168,7 @@ function injectFileSelector() {
         // Function to update color pickers with stored values
         function updateColorPickers() {
           try{const colorInputBg = document.getElementById("colorInputBg");
+            const colorInputHd = document.getElementById("colorInputHd");
           const colorInputBo = document.getElementById("colorInputBo");
           const colorInputAc = document.getElementById("colorInputAc");
           const colorText1 = document.getElementById("colorText1");
@@ -169,6 +176,10 @@ function injectFileSelector() {
           if (colorInputBg && window.currentColorBg) {
             const bgColorWithoutAlpha = window.currentColorBg.length > 7 ? window.currentColorBg.slice(0, 7) : window.currentColorBg;
             colorInputBg.value = bgColorWithoutAlpha;
+          }
+          if (colorInputHd && window.currentColorHd) {
+            const hdColorWithoutAlpha = window.currentColorHd.length > 7 ? window.currentColorHd.slice(0, 7) : window.currentColorHd;
+            colorInputHd.value = hdColorWithoutAlpha;
           }
           if (colorInputBo && window.currentColorBo) {
             const boColorWithoutAlpha = window.currentColorBo.length > 7 ? window.currentColorBo.slice(0, 7) : window.currentColorBo;
@@ -201,10 +212,26 @@ function injectFileSelector() {
             }
           });
         }
+        if (frameSaveBtnBd && frameFileInputBd) {
+          frameSaveBtnBd.addEventListener("click", () => {
+            if (typeof saveFrame === "function") {
+              saveFrame(frameFileInputBd);
+            } else {
+              console.error("save Frame function not found");
+            }
+          });
+        }
         if (colorInputBg && alphaInputBg) {
           // console.log("🎨 Color inputs detected. Attaching event listeners...");
           colorInputBg.addEventListener("input", updateBackgroundColor);
           alphaInputBg.addEventListener("input", updateBackgroundColor);
+        } else {
+          console.error("❌ Color inputs not found in the DOM.");
+        }
+        if (colorInputHd && alphaInputHd) {
+          // console.log("🎨 Color inputs detected. Attaching event listeners...");
+          colorInputHd.addEventListener("input", updateHeaderColor);
+          alphaInputHd.addEventListener("input", updateHeaderColor);
         } else {
           console.error("❌ Color inputs not found in the DOM.");
         }
@@ -240,10 +267,26 @@ function injectFileSelector() {
             location.reload();
           });
         }
+        if (frameRemoveBtnBd) {
+          frameRemoveBtnBd.addEventListener("click", () => {
+            if (typeof removeFrame === "function") {
+              removeFrame();
+            }
+            location.reload();
+          });
+        }
         if (removeBtnBg) {
           removeBtnBg.addEventListener("click", () => {
             if (typeof removeColor === "function") {
               removeColor("background");
+              location.reload();
+            }
+          });
+        }
+        if (removeBtnHd) {
+          removeBtnHd.addEventListener("click", () => {
+            if (typeof removeColor === "function") {
+              removeColor("header");
               location.reload();
             }
           });
@@ -285,6 +328,7 @@ function injectFileSelector() {
             if (confirm("Are you sure you want to remove all the customizations?")) {
               if (typeof removeColor === "function") {
                 removeColor("background");
+               removeColor("header");
                 removeColor("border");
                 removeColor("accent");
                 removeColor("text1");
@@ -292,6 +336,9 @@ function injectFileSelector() {
               }
               if (typeof removeBackdrop === "function") {
                 removeBackdrop();
+              }
+              if (typeof removeFrame === "function") {
+                removeFrame();
               }
               location.reload();
             }
@@ -307,6 +354,15 @@ function injectFileSelector() {
           // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
           saveColor(hexWithAlpha, 'background');
           applyBackgroundColor(hexWithAlpha);
+        }
+         function updateHeaderColor() {
+          const hex = colorInputHd.value;
+          const alpha = Math.round((alphaInputHd.value / 100) * 255);
+          const alphaHex = alpha.toString(16).padStart(2, '0');
+          const hexWithAlpha = `#${hex.slice(1)}${alphaHex}`;
+          // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
+          saveColor(hexWithAlpha, 'header');
+          applyHeaderBackgroundColor(hexWithAlpha);
         }
         function updateBorderColor() {
           const hex = colorInputBo.value;

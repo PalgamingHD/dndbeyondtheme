@@ -88,20 +88,26 @@ const getCharacterID = () => {
     return match ? match[1] : null;
 };
 
+function getFromStorage(key){
+  // Works with either `browser` or `chrome`
+  if (typeof browser !== "undefined") return browser.storage.local.get(key);
+  return new Promise((resolve, reject) => {
+    try { chrome.storage.local.get(key, resolve); }
+    catch (e) { reject(e); }
+  });
+}
 
 // ----- Apply Functions -----
 
 // Function to apply backdrop
 function applyBackdrop() {
-    // console.log("Checking for stored backdrop...");
-
     const characterID = getCharacterID();
     if (!characterID) {
         // console.log("No character ID found. Skipping backdrop replacement.");
         return;
     }
 
-    storage.get(`backdrop_${characterID}`).then((data) => {
+      getFromStorage(`backdrop_${characterID}`).then((data) => {
         const backdropData = data[`backdrop_${characterID}`];
 
         if (!backdropData) {
@@ -118,13 +124,38 @@ function applyBackdrop() {
             bodyElement.style.setProperty("background-size", "cover", "important");
             bodyElement.style.setProperty("background-position", "center center", "important");
             bodyElement.style.setProperty("background-repeat", "no-repeat", "important");
-            // console.log("Backdrop applied to body!");
         }
 
     }).catch(error => {
         console.error("Error loading backdrop:", error);
     });
 };
+
+function applyFrame(){
+   const characterID = getCharacterID();
+   if (!characterID) {
+      return;
+   } // skip if character doesn't exist
+      getFromStorage(`frame_${characterID}`).then((data) => {
+      const frameData = data[`frame_${characterID}`];
+
+      if (!frameData) {
+         return;
+      } // skip if no current frame
+
+      const frameEl = document.querySelector(".ddbc-character-avatar__frame");
+      if (frameEl) {
+         frameEl.style.setProperty("background-image", `url(${frameData})`, "important");
+         // console.log("frame applied to body!");
+      } else{
+         console.log("frame failed");
+      }
+
+   }).catch(error => {
+      console.error("Error loading frame:", error);
+   });  
+
+}
 
 // Apply Box Background Color
 function applyBackgroundColor(newColor, num) {
@@ -193,6 +224,54 @@ function applyBackgroundColor(newColor, num) {
     }
 }
 window.applyBackgroundColor = applyBackgroundColor;
+
+function applyHeaderBackgroundColor(newColor) {
+  const color = newColor.slice(0, -2); // keep your pattern
+
+  // 1) Keep (or drop) this if you DO want the inner button bar colored:
+  const headerBoxes = document.querySelectorAll('.ct-character-header-desktop');
+  headerBoxes.forEach(el => {
+    el.setAttribute("style", "background:" + color + " !important;");
+    el.style.backdropFilter = 'none';
+    el.style.webkitBackdropFilter = 'none';
+  });
+
+  // 2) IMPORTANT: Do NOT paint the .ct-character-sheet element background.
+  //    Also clear any previous override that might have colored the whole page.
+  document.querySelectorAll('.ct-character-sheet').forEach(el => {
+    el.style.setProperty('background', 'transparent', 'important');
+    el.style.removeProperty('background-image'); // in case we set it before
+  });
+
+  // 3) Recolor ONLY the overlay pseudo-elements
+  let style = document.getElementById('ddbHeaderOverlayStyle');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'ddbHeaderOverlayStyle';
+    document.head.appendChild(style);
+  }
+   style.textContent = `
+    .ct-character-sheet::before,
+    .ct-character-sheet--dark-mode::before,
+    .ct-character-header-desktop::before {
+      content: "" !important;
+      background: ${color} !important;
+      background-image: none !important;
+      opacity: 1 !important;
+      mix-blend-mode: normal !important;
+      box-shadow: none !important;
+    }
+    .ct-character-header-desktop::after {
+      background: transparent !important;
+      background-image: none !important;
+      opacity: 0 !important;
+      box-shadow: none !important;
+    }
+  `;
+}
+
+window.applyHeaderBackgroundColor = applyHeaderBackgroundColor;
+
 
 // Apply Box Border Color
 function applyBorderColor(newColor, num) {
@@ -1100,6 +1179,36 @@ function saveBackdrop(fileInput) {
 };
 window.saveBackdrop = saveBackdrop;
 
+function saveFrame(fileInput) {
+    const characterID = getCharacterID();
+    if (!characterID) {
+        return;
+    }
+
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("No file selected!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const imageData = e.target.result;
+        // console.log(`📤 Storing backdrop for Character ${characterID}`);
+
+        let saveData = {};
+        saveData[`frame_${characterID}`] = imageData;
+
+        chrome.storage.local.set(saveData, () => {
+            // console.log(`✅ Backdrop saved for Character ${characterID}`);
+            applyFrame();
+        });
+    };
+
+    reader.readAsDataURL(file);
+};
+window.saveFrame = saveFrame;
+
 // Save colors
 function saveColor(color, type){
     const characterID = getCharacterID();
@@ -1189,6 +1298,19 @@ function removeBackdrop() {
 };
 window.removeBackdrop = removeBackdrop;
 
+function removeFrame() {
+    const characterID = getCharacterID();
+    if (!characterID) {
+        return;
+    }
+
+    chrome.storage.local.remove(`frame_${characterID}`, () => {
+        // console.log(`Frame removed for Character ${characterID}`);
+    });
+};
+window.removeFrame = removeFrame;
+
+
 function removeColor(type) {
     const characterID = getCharacterID();
     if (!characterID) {
@@ -1206,7 +1328,7 @@ window.removeBackdrop = removeBackdrop;
 function updateSavedColors(){
     const characterID = getCharacterID();
     if (characterID) {
-        for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
+        for (const type of ['background', 'header', 'border', 'accent', 'text1', 'text0']) {
             storage.get(`${type}_${characterID}`).then((data) => {
 
                 var typeOf = type
@@ -1232,6 +1354,7 @@ function updateSavedColors(){
 if (document.readyState === "complete" || document.readyState === "interactive") {
     console.log("DOM is ready listener");
     applyBackdrop();
+   applyFrame();
     injectButton();
     updateSavedColors();
 
@@ -1260,6 +1383,7 @@ if (document.readyState === "complete" || document.readyState === "interactive")
     document.addEventListener("DOMContentLoaded", () => {
         console.log("DOM is loaded listener");
         applyBackdrop();
+      applyFrame();
         injectButton();
         updateSavedColors();
 
@@ -1290,6 +1414,7 @@ if (document.readyState === "complete" || document.readyState === "interactive")
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM is content listener");
     applyBackdrop();
+   applyFrame();
     injectButton();
     updateSavedColors();
 
@@ -1320,6 +1445,7 @@ document.addEventListener("visibilitychange", () => {
     // console.log("visibility change listener");
     if (document.visibilityState === "visible") {
         applyBackdrop();
+         applyFrame();
         // injectButton();
         updateSavedColors();
 
@@ -1352,6 +1478,7 @@ const observer = new MutationObserver(() => {
     console.log("Mutation observer");
 
     applyBackdrop();
+   applyFrame();
     updateSavedColors();
     
     const buttonPresente = document.getElementById(injectedBtnId)

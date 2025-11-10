@@ -66,6 +66,16 @@
                     </div>
                     <p id="backdropStatus"></p>
                 </div>
+               <!-- Frame Management -->
+                <h3 class="collapsible">Frame Management</h3>
+                <div class="content">
+                    <input type="file" id="frameFileInput" accept="image/*">
+                    <div class="button-container">
+                        <button id="saveFrameBtn" class="save-btn">Apply Frame</button>
+                        <button id="removeFrameBtn" class="remove-btn">Reset Frame</button>
+                    </div>
+                    <p id="frameStatus"></p>
+                </div>
 
                 <!-- Box Background Color -->
                 <h3 class="collapsible">Box Background Color</h3>
@@ -81,7 +91,20 @@
                     <button id="removeColorBg" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
                     <p id="colorPreviewBg"></p>
                 </div>
-
+               <!-- Header Background Color -->
+                <h3 class="collapsible">Header Background Color</h3>
+                <div class="content" style="display: flex; flex-direction: row;">
+                    <div>
+                        <label>Color Picker:  </label>
+                        <input type="color" id="colorInputHd">
+                        <br>
+                        <label for="alphaInputHd">Transparency:</label>
+                        <br>
+                        <input type="range" id="alphaInputHd" min="0" max="100" value="100">
+                    </div>
+                    <button id="removeColorHd" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
+                    <p id="colorPreviewHd"></p>
+                </div>
                 <!-- Box Border Color -->
                 <h3 class="collapsible">Box Border Color</h3>
                 <div class="content" style="display: flex; flex-direction: row;">

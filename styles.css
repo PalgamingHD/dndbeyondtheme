@@ -61,6 +61,11 @@
   margin-bottom: 10px;
 }
 
+#frameFileInput {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 /* Save Button Styles */
 .button-container {
   display: flex;
