@@ -4,6 +4,8 @@
 
 D&D Beyond Backdrop & Theme Customizer is a browser extension that allows users to replace character backdrop images on **D&D Beyond** and customize the theme colors of their character sheet.
 
+
+Note: This is a fork of the official extension from the chrome webstore (MIT License). couldn't find it on github to edit so I made my own setup. Hopefully y'all enjoy. 
 ## Features
 
 - **Custom Backdrops** – Upload and save a unique backdrop for each character.
@@ -57,3 +59,4 @@ This project is licensed under the **MIT License**.
 ---
 
 Enjoy customizing your **D&D Beyond** experience!
+
