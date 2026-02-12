@@ -8,151 +8,240 @@
 </head>
 
 <body>
-    <div class="ct-subsection customizerSidebar" style="pointer-events: auto">
-        <section class="ct-sidebar2-box customizerSidebar" style="display: flex; flex-direction: column;top: 46px;">
-            <button id="closeArrowSide" class="styles_arrows__182cG" aria-label="Hide Custom Sidebar"
-                style="pointer-events: auto;position: relative;">
-                <svg viewBox="0 0 20 20" width="1em" height="1em" aria-labelledby="rightArrowsTitle">
-                    <title id="rightArrowsTitle">Right Arrows Icon</title>
-                    <path
-                        d="M5.21.36h0A2.25,2.25,0,0,1,7.89.53L16,8,7.89,15.47a2.25,2.25,0,0,1-2.68.17h0A1.3,1.3,0,0,1,5,13.52L11,8,5,2.48A1.3,1.3,0,0,1,5.21.36Z">
-                    </path>
-                    <polygon points="9.09 8 0 0 0 16 9.09 8"></polygon>
+    <div class="customizer-sidebar-container">
+        <!-- Close Button -->
+        <button id="closeArrowSide" class="styles_arrows__182cG" aria-label="Hide Custom Sidebar">
+            <svg viewBox="0 0 20 20" width="1em" height="1em" aria-labelledby="rightArrowsTitle">
+                <title id="rightArrowsTitle">Right Arrows Icon</title>
+                <path d="M5.21.36h0A2.25,2.25,0,0,1,7.89.53L16,8,7.89,15.47a2.25,2.25,0,0,1-2.68.17h0A1.3,1.3,0,0,1,5,13.52L11,8,5,2.48A1.3,1.3,0,0,1,5.21.36Z"></path>
+                <polygon points="9.09 8 0 0 0 16 9.09 8"></polygon>
+            </svg>
+        </button>
+
+        <div class="sidebar-frame">
+            <!-- Decorative SVGs -->
+            <div class="frame-svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 281 765" class="frame-svg-up">
+                    <path class="bg" d="M 29.409297 3.17005 A 5.1 5.1 0 0 1 25.829219 4.4395812 A 5.83 5.83 0 0 1 23.579219 5.8790344 L 23.190547 6.0001281 L 22.999141 6.0509094 C 22.579141 6.3009091 22.130078 6.5191909 21.710078 6.7891906 A 7.34 7.34 0 0 0 20.489375 7.6290344 C 21.489374 6.7190353 20.230156 7.8691908 20.040156 8.0391906 A 5.85 5.85 0 0 1 17.210078 9.3692687 A 52.05 52.05 0 0 0 13.309687 13.369269 C 8.7196921 18.839263 8.4794517 26.880447 7.0694531 33.570441 C 7.0694531 33.71044 6.9900781 33.840831 6.9600781 33.970831 A 11.08 11.08 0 0 1 7.2491406 35.490363 C 7.0891408 34.290364 7.3397657 35.840206 7.3897656 36.080206 C 7.4830989 36.500206 7.5838803 36.919972 7.6905469 37.339972 A 21 21 0 0 0 8.5694531 39.910284 C 9.6394521 42.500282 7.3992164 45.310676 5.0792187 46.060675 A 3.22 3.22 0 0 1 4.38 46.199347 C 5.9399984 55.139338 8.2404684 70.620141 7.8604687 83.000128 C 7.2804693 101.57011 7.2803906 132.00013 7.2803906 132.00013 C 7.2803906 132.00013 7.4380437 286.15772 7.3741406 437.1388 L 272.66711 437.1388 C 272.57808 286.61402 272.71984 132.05091 272.71984 132.05091 C 272.71984 132.05091 272.71977 101.62089 272.13977 83.050909 C 271.77977 71.200921 273.85906 56.509338 275.41906 47.449347 A 4 4 0 0 1 273.93078 45.810675 C 272.23078 42.200679 271.52078 38.319109 272.93078 34.459113 A 6.27 6.27 0 0 1 273.86047 32.769659 C 273.16047 29.619663 273.52969 26.290594 272.55969 23.230597 A 42.76 42.76 0 0 0 269.02062 16.230597 A 18.66 18.66 0 0 0 264.02062 9.8595031 C 262.02063 8.3795046 259.93984 7.3599701 258.21984 5.5899719 C 256.47985 4.8699726 254.73062 4.1690336 253.02062 3.3790344 L 252.62023 3.17005 L 29.409297 3.17005 z "></path>
+                    <path class="bo" d="M 15.089844 0 L 15.089844 1.7109375 C 15.089844 5.8409334 8.0908567 8.970079 5.3808594 9.8300781 L 4.3007812 10.169922 L 1.8203125 38.279297 L 1.9394531 38.619141 A 64 64 0 0 1 4.2792969 48.160156 A 21 21 0 0 1 0.59960938 51.320312 L 0 51.699219 L 0.2109375 52.390625 C 3.0909346 61.890615 5.0007038 87.700482 5.7207031 100.48047 L 5.7207031 436.05469 L 9.0898438 436.05469 L 9.0898438 91.119141 C 9.1798437 89.929142 10.899528 65.910294 7.5195312 47.070312 A 12.41 12.41 0 0 0 9.5703125 37.189453 C 9.5703125 37.189453 9.120312 36.120077 8.5703125 34.580078 A 29.8 29.8 0 0 1 9.8691406 22.160156 C 12.819138 13.400165 19.999776 6.9999183 30.759766 3.4199219 L 250.32031 3.4199219 C 273.37029 11.049914 273.12047 29.119771 272.48047 34.509766 C 271.89047 36.139764 271.42062 37.259609 271.39062 37.349609 A 12.19 12.19 0 0 0 273.49023 47.099609 C 270.11024 65.929591 271.83016 89.910235 271.91016 90.990234 L 271.91016 436.05469 L 275.2793 436.05469 L 275.2793 100.51953 C 276.0493 87.759544 277.92078 61.90085 280.80078 52.380859 L 281.00977 51.689453 L 280.41016 51.310547 A 21.36 21.36 0 0 1 276.73047 48.169922 A 62.8 62.8 0 0 1 279.07031 38.609375 L 279.18945 38.269531 L 276.69922 10.169922 L 275.61914 9.8300781 C 273.09914 9.0300789 265.91016 5.8309334 265.91016 1.7109375 L 265.91016 0 L 15.089844 0 z M 18.25 3.4199219 L 27.130859 3.4199219 C 10.490876 10.289915 7.4609373 23.169382 7.2109375 30.609375 C 6.8309379 29.359376 6.4709372 28.049061 6.2109375 26.789062 L 7.4492188 12.720703 C 10.239216 11.720704 17.000001 8.6599166 18.25 3.4199219 z M 253.80078 3.4199219 L 262.68945 3.4199219 C 263.93945 8.6599166 270.69024 11.680704 273.49023 12.720703 L 273.5293 12.720703 L 274.76953 26.789062 C 274.51953 27.999061 274.17953 29.27047 273.76953 30.480469 A 30.1 30.1 0 0 0 272.2207 21.759766 C 270.22071 15.759772 265.34077 8.1899171 253.80078 3.4199219 z"></path>
                 </svg>
-            </button>
-            <div style="position: relative;">
-            <div class="ddbc-box-background--customizerSidebar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 281 765" class="ddbc-svg up">
-                    <path class="bg Up"
-                        d="M 29.409297 3.17005 A 5.1 5.1 0 0 1 25.829219 4.4395812 A 5.83 5.83 0 0 1 23.579219 5.8790344 L 23.190547 6.0001281 L 22.999141 6.0509094 C 22.579141 6.3009091 22.130078 6.5191909 21.710078 6.7891906 A 7.34 7.34 0 0 0 20.489375 7.6290344 C 21.489374 6.7190353 20.230156 7.8691908 20.040156 8.0391906 A 5.85 5.85 0 0 1 17.210078 9.3692687 A 52.05 52.05 0 0 0 13.309687 13.369269 C 8.7196921 18.839263 8.4794517 26.880447 7.0694531 33.570441 C 7.0694531 33.71044 6.9900781 33.840831 6.9600781 33.970831 A 11.08 11.08 0 0 1 7.2491406 35.490363 C 7.0891408 34.290364 7.3397657 35.840206 7.3897656 36.080206 C 7.4830989 36.500206 7.5838803 36.919972 7.6905469 37.339972 A 21 21 0 0 0 8.5694531 39.910284 C 9.6394521 42.500282 7.3992164 45.310676 5.0792187 46.060675 A 3.22 3.22 0 0 1 4.38 46.199347 C 5.9399984 55.139338 8.2404684 70.620141 7.8604687 83.000128 C 7.2804693 101.57011 7.2803906 132.00013 7.2803906 132.00013 C 7.2803906 132.00013 7.4380437 286.15772 7.3741406 437.1388 L 272.66711 437.1388 C 272.57808 286.61402 272.71984 132.05091 272.71984 132.05091 C 272.71984 132.05091 272.71977 101.62089 272.13977 83.050909 C 271.77977 71.200921 273.85906 56.509338 275.41906 47.449347 A 4 4 0 0 1 273.93078 45.810675 C 272.23078 42.200679 271.52078 38.319109 272.93078 34.459113 A 6.27 6.27 0 0 1 273.86047 32.769659 C 273.16047 29.619663 273.52969 26.290594 272.55969 23.230597 A 42.76 42.76 0 0 0 269.02062 16.230597 A 18.66 18.66 0 0 0 264.02062 9.8595031 C 262.02063 8.3795046 259.93984 7.3599701 258.21984 5.5899719 C 256.47985 4.8699726 254.73062 4.1690336 253.02062 3.3790344 L 252.62023 3.17005 L 29.409297 3.17005 z ">
-                    </path>
-                    <path class="bo Up"
-                        d="M 15.089844 0 L 15.089844 1.7109375 C 15.089844 5.8409334 8.0908567 8.970079 5.3808594 9.8300781 L 4.3007812 10.169922 L 1.8203125 38.279297 L 1.9394531 38.619141 A 64 64 0 0 1 4.2792969 48.160156 A 21 21 0 0 1 0.59960938 51.320312 L 0 51.699219 L 0.2109375 52.390625 C 3.0909346 61.890615 5.0007038 87.700482 5.7207031 100.48047 L 5.7207031 436.05469 L 9.0898438 436.05469 L 9.0898438 91.119141 C 9.1798437 89.929142 10.899528 65.910294 7.5195312 47.070312 A 12.41 12.41 0 0 0 9.5703125 37.189453 C 9.5703125 37.189453 9.120312 36.120077 8.5703125 34.580078 A 29.8 29.8 0 0 1 9.8691406 22.160156 C 12.819138 13.400165 19.999776 6.9999183 30.759766 3.4199219 L 250.32031 3.4199219 C 273.37029 11.049914 273.12047 29.119771 272.48047 34.509766 C 271.89047 36.139764 271.42062 37.259609 271.39062 37.349609 A 12.19 12.19 0 0 0 273.49023 47.099609 C 270.11024 65.929591 271.83016 89.910235 271.91016 90.990234 L 271.91016 436.05469 L 275.2793 436.05469 L 275.2793 100.51953 C 276.0493 87.759544 277.92078 61.90085 280.80078 52.380859 L 281.00977 51.689453 L 280.41016 51.310547 A 21.36 21.36 0 0 1 276.73047 48.169922 A 62.8 62.8 0 0 1 279.07031 38.609375 L 279.18945 38.269531 L 276.69922 10.169922 L 275.61914 9.8300781 C 273.09914 9.0300789 265.91016 5.8309334 265.91016 1.7109375 L 265.91016 0 L 15.089844 0 z M 18.25 3.4199219 L 27.130859 3.4199219 C 10.490876 10.289915 7.4609373 23.169382 7.2109375 30.609375 C 6.8309379 29.359376 6.4709372 28.049061 6.2109375 26.789062 L 7.4492188 12.720703 C 10.239216 11.720704 17.000001 8.6599166 18.25 3.4199219 z M 253.80078 3.4199219 L 262.68945 3.4199219 C 263.93945 8.6599166 270.69024 11.680704 273.49023 12.720703 L 273.5293 12.720703 L 274.76953 26.789062 C 274.51953 27.999061 274.17953 29.27047 273.76953 30.480469 A 30.1 30.1 0 0 0 272.2207 21.759766 C 270.22071 15.759772 265.34077 8.1899171 253.80078 3.4199219 z M 275.24023 32.060547 L 275.75 37.800781 A 61.16 61.16 0 0 0 274 44.400391 A 9.5 9.5 0 0 1 273.10938 37.929688 L 273.11914 37.880859 C 273.20914 37.67086 274.25024 35.160544 275.24023 32.060547 z M 5.7597656 32.109375 C 6.7597646 35.179372 7.7600782 37.639531 7.8300781 37.769531 A 9.73 9.73 0 0 1 7 44.330078 A 62.24 62.24 0 0 0 5.2695312 37.849609 L 5.25 37.849609 L 5.7597656 32.109375 z M 276.33984 50.400391 A 23.59 23.59 0 0 0 278.83984 52.460938 C 277.12985 58.610931 275.83984 70.030167 274.83984 80.910156 A 191.48 191.48 0 0 1 276.33984 50.400391 z M 4.6699219 50.439453 A 191.42 191.42 0 0 1 6.1503906 81 C 5.1503916 70.130011 3.8603889 58.710541 2.1503906 52.560547 A 21.9 21.9 0 0 0 4.640625 50.490234 L 4.6699219 50.439453 z ">
-                    </path>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 281 765" class="ddbc-svg center">
-                    <path class="bg Center"
-                    d="m 7.3066406,253.62305 c 0.021275,46.67618 0.046901,85.80648 0.050781,164.94726 -0.00223,45.51477 -0.015634,54.27067 -0.029297,94.86328 H 272.69336 c -0.008,-40.59439 -0.02,-49.39498 -0.0156,-94.86328 -0.008,-79.05996 0.014,-118.25936 0.0293,-164.94726 z">
-                    </path>
-                    <path class="bo Center"
-                    d="m 5.7207031,253.62305 v 107.46093 114.97071 37.3789 H 9.0898438 V 476.05469 361.08398 253.62305 Z m 266.1894569,0 v 107.46093 114.97071 37.3789 h 3.36914 V 476.05469 361.08398 253.62305 Z">
-                    </path>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 371.83203125 281 393.16796875" class="ddbc-svg down">
-                    <path class="bg Down"
-                        d="M 7.3760937 372.91614 C 7.3918551 537.50679 7.2379195 712.79098 6.2803906 719.33021 A 5.14 5.14 0 0 1 9.3507031 725.33021 A 29.15 29.15 0 0 1 6.6807812 732.33021 A 4.68 4.68 0 0 1 7.5303906 735.24036 C 7.2603909 749.62035 19.65915 757.83013 28.999141 763.00013 A 5.7 5.7 0 0 1 29.999141 764.00013 L 246.89953 764.00013 A 5.09 5.09 0 0 1 249.73937 762.92005 A 4.1 4.1 0 0 1 251.32922 761.47083 C 252.32922 760.97083 253.40031 760.53974 254.45031 760.09974 L 254.73156 759.9806 A 6.87 6.87 0 0 0 255.82922 759.47083 C 256.04922 759.36083 256.28086 759.28935 256.51086 759.19935 C 257.51086 758.19935 258.36906 757.28021 258.91906 756.83021 C 261.82906 754.40021 265.15039 752.56966 266.78039 749.01966 A 4.38 4.38 0 0 1 268.52062 747.01966 C 269.33062 742.11966 270.6507 737.30044 271.1007 732.32044 A 5.32 5.32 0 0 1 271.66906 730.32044 C 271.66906 730.13044 271.59969 729.96067 271.55969 729.81067 C 271.17969 728.07068 270.69039 726.37075 270.28039 724.64075 A 4.8 4.8 0 0 1 275.07922 719.00013 A 32.47 32.47 0 0 0 273.8507 714.70911 C 272.85159 712.16167 272.66539 537.49993 272.65734 372.91614 L 7.3760937 372.91614 z M 254.73156 759.9806 A 6.87 6.87 0 0 1 254.54016 760.07044 L 255.09094 759.83021 L 254.73156 759.9806 z ">
-                    </path>
-                    <path class="bo Down"
-                        d="M 5.7207031 371.83203 L 5.7207031 654.48047 C 5.0007038 667.23046 3.0909346 703.09938 0.2109375 712.60938 L 0 713.30078 L 0.59960938 713.67969 A 20.83 20.83 0 0 1 4.2792969 716.82031 A 61.64 61.64 0 0 1 1.9394531 726.38086 L 1.8203125 726.73047 L 4.3007812 754.83008 L 5.3808594 755.16992 C 8.0808567 756.02992 15.089844 759.16907 15.089844 763.28906 L 15.089844 765 L 265.91016 765 L 265.91016 763.28906 C 265.91016 759.15907 272.90914 756.02992 275.61914 755.16992 L 276.69922 754.83008 L 279.17969 726.73047 L 279.06055 726.38086 A 64 64 0 0 1 276.7207 716.83984 A 21 21 0 0 1 280.40039 713.67969 L 281 713.30078 L 280.78906 712.60938 C 277.90907 703.10938 276.0493 667.29952 275.2793 654.51953 L 275.2793 371.83203 L 271.91016 371.83203 L 271.91016 673.88086 C 271.82016 675.07086 270.10047 699.09088 273.48047 717.88086 A 12.41 12.41 0 0 0 271.42969 727.75977 L 271.43945 727.81055 C 271.43945 727.81055 271.88945 728.87992 272.43945 730.41992 A 29.79 29.79 0 0 1 271.10938 742.83984 C 268.17938 751.59983 260.99999 758.00008 250.25 761.58008 L 30.679688 761.58008 C 7.6797105 753.95009 7.8795319 735.88023 8.5195312 730.49023 C 9.1095307 728.86024 9.579375 727.74016 9.609375 727.66016 A 12.21 12.21 0 0 0 7.5097656 717.90039 C 10.889762 699.07041 9.1698437 675.08976 9.0898438 674.00977 L 9.0898438 371.83203 L 5.7207031 371.83203 z M 6.1503906 684.05078 A 191.41 191.41 0 0 1 4.6503906 714.55078 A 23.59 23.59 0 0 0 2.1503906 712.49023 C 3.8603889 706.34024 5.1503916 694.92077 6.1503906 684.05078 z M 274.83984 684.05078 C 275.83984 694.93077 277.12985 706.34024 278.83984 712.49023 A 21.9 21.9 0 0 0 276.34961 714.56055 A 191.37 191.37 0 0 1 274.83984 684.05078 z M 7 720.59961 A 9.5 9.5 0 0 1 7.890625 727.07031 L 7.8691406 727.07031 C 7.7791407 727.28031 6.739999 729.79063 5.75 732.89062 L 5.2402344 727.15039 A 60.54 60.54 0 0 0 7 720.59961 z M 274.01953 720.66992 A 62.24 62.24 0 0 0 275.75 727.15039 L 275.24023 732.89062 C 274.24024 729.81063 273.23992 727.36047 273.16992 727.23047 A 9.73 9.73 0 0 1 274.01953 720.66992 z M 273.78906 734.39062 C 274.16906 735.65062 274.52906 736.95094 274.78906 738.21094 L 273.55078 752.2793 C 270.76078 753.2793 264 756.34008 262.75 761.58008 L 253.86914 761.58008 C 270.50912 754.72008 273.53906 741.83062 273.78906 734.39062 z M 7.2109375 734.51953 A 30 30 0 0 0 8.7597656 743.24023 C 10.759764 749.24023 15.639699 756.81008 27.179688 761.58008 L 18.25 761.58008 C 17.000001 756.34008 10.249216 753.3193 7.4492188 752.2793 L 7.4707031 752.2793 L 6.2109375 738.21094 C 6.4609372 737.00094 6.8009379 735.73953 7.2109375 734.51953 z ">
-                    </path>
+                <div class="frame-svg-center">
+                    <div class="center-bg"></div>
+                    <div class="center-border-left"></div>
+                    <div class="center-border-right"></div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 371.83203125 281 393.16796875" class="frame-svg-down">
+                    <path class="bg" d="M 7.3760937 372.91614 C 7.3918551 537.50679 7.2379195 712.79098 6.2803906 719.33021 A 5.14 5.14 0 0 1 9.3507031 725.33021 A 29.15 29.15 0 0 1 6.6807812 732.33021 A 4.68 4.68 0 0 1 7.5303906 735.24036 C 7.2603909 749.62035 19.65915 757.83013 28.999141 763.00013 A 5.7 5.7 0 0 1 29.999141 764.00013 L 246.89953 764.00013 A 5.09 5.09 0 0 1 249.73937 762.92005 A 4.1 4.1 0 0 1 251.32922 761.47083 C 252.32922 760.97083 253.40031 760.53974 254.45031 760.09974 L 254.73156 759.9806 A 6.87 6.87 0 0 0 255.82922 759.47083 C 256.04922 759.36083 256.28086 759.28935 256.51086 759.19935 C 257.51086 758.19935 258.36906 757.28021 258.91906 756.83021 C 261.82906 754.40021 265.15039 752.56966 266.78039 749.01966 A 4.38 4.38 0 0 1 268.52062 747.01966 C 269.33062 742.11966 270.6507 737.30044 271.1007 732.32044 A 5.32 5.32 0 0 1 271.66906 730.32044 C 271.66906 730.13044 271.59969 729.96067 271.55969 729.81067 C 271.17969 728.07068 270.69039 726.37075 270.28039 724.64075 A 4.8 4.8 0 0 1 275.07922 719.00013 A 32.47 32.47 0 0 0 273.8507 714.70911 C 272.85159 712.16167 272.66539 537.49993 272.65734 372.91614 L 7.3760937 372.91614 z "></path>
+                    <path class="bo" d="M 5.7207031 371.83203 L 5.7207031 654.48047 C 5.0007038 667.23046 3.0909346 703.09938 0.2109375 712.60938 L 0 713.30078 L 0.59960938 713.67969 A 20.83 20.83 0 0 1 4.2792969 716.82031 A 61.64 61.64 0 0 1 1.9394531 726.38086 L 1.8203125 726.73047 L 4.3007812 754.83008 L 5.3808594 755.16992 C 8.0808567 756.02992 15.089844 759.16907 15.089844 763.28906 L 15.089844 765 L 265.91016 765 L 265.91016 763.28906 C 265.91016 759.15907 272.90914 756.02992 275.61914 755.16992 L 276.69922 754.83008 L 279.17969 726.73047 L 279.06055 726.38086 A 64 64 0 0 1 276.7207 716.83984 A 21 21 0 0 1 280.40039 713.67969 L 281 713.30078 L 280.78906 712.60938 C 277.90907 703.10938 276.0493 667.29952 275.2793 654.51953 L 275.2793 371.83203 L 271.91016 371.83203 L 271.91016 673.88086 C 271.82016 675.07086 270.10047 699.09088 273.48047 717.88086 A 12.41 12.41 0 0 0 271.42969 727.75977 L 271.43945 727.81055 C 271.43945 727.81055 271.88945 728.87992 272.43945 730.41992 A 29.79 29.79 0 0 1 271.10938 742.83984 C 268.17938 751.59983 260.99999 758.00008 250.25 761.58008 L 30.679688 761.58008 C 7.6797105 753.95009 7.8795319 735.88023 8.5195312 730.49023 C 9.1095307 728.86024 9.579375 727.74016 9.609375 727.66016 A 12.21 12.21 0 0 0 7.5097656 717.90039 C 10.889762 699.07041 9.1698437 675.08976 9.0898438 674.00977 L 9.0898438 371.83203 L 5.7207031 371.83203 z "></path>
                 </svg>
             </div>
-            <div class="ct-section--customizerSidebar">
-                <h2 class="headerSidebar">D&D Beyond Customizer</h2>
 
-                <!-- Top Section -->
-                <section style='display: flex; justify-content: space-between; padding: 10px'>
-                    <button id="resetBtn" class="remove-btn">Reset All</button>
-                    <button id="rainbowModeBtn" class="rainbow-btn" value='1'>Party Time?</button>
-                </section>
-
-                <!-- Backdrop Management -->
-                <h3 class="collapsible">Backdrop Management</h3>
-                <div class="content">
-                    <input type="file" id="backdropFileInput" accept="image/*">
-                    <div class="button-container">
-                        <button id="saveBackdropBtn" class="save-btn">Apply Backdrop</button>
-                        <button id="removeBackdropBtn" class="remove-btn">Reset Backdrop</button>
+            <!-- Scrollable Content -->
+            <div class="sidebar-content-scrollable">
+                <div class="sidebar-header-area">
+                    <h2 class="headerSidebar">D&D Beyond Customizer</h2>
+                    <div class="top-buttons">
+                        <button id="resetBtn" class="remove-btn">Reset All</button>
+                        <button id="rainbowModeBtn" class="rainbow-btn" value='1'>Party Time?</button>
                     </div>
-                    <p id="backdropStatus"></p>
-                </div>
-               <!-- Frame Management -->
-                <h3 class="collapsible">Frame Management</h3>
-                <div class="content">
-                    <input type="file" id="frameFileInput" accept="image/*">
-                    <div class="button-container">
-                        <button id="saveFrameBtn" class="save-btn">Apply Frame</button>
-                        <button id="removeFrameBtn" class="remove-btn">Reset Frame</button>
-                    </div>
-                    <p id="frameStatus"></p>
                 </div>
 
-                <!-- Box Background Color -->
-                <h3 class="collapsible">Box Background Color</h3>
-                <div class="content" style="display: flex; flex-direction: row;">
-                    <div>
-                        <label>Color Picker:  </label>
-                        <input type="color" id="colorInputBg">
-                        <br>
-                        <label for="alphaInputBg">Transparency:</label>
-                        <br>
-                        <input type="range" id="alphaInputBg" min="0" max="100" value="100">
-                    </div>
-                    <button id="removeColorBg" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
-                    <p id="colorPreviewBg"></p>
-                </div>
-               <!-- Header Background Color -->
-                <h3 class="collapsible">Header Background Color</h3>
-                <div class="content" style="display: flex; flex-direction: row;">
-                    <div>
-                        <label>Color Picker:  </label>
-                        <input type="color" id="colorInputHd">
-                        <br>
-                        <label for="alphaInputHd">Transparency:</label>
-                        <br>
-                        <input type="range" id="alphaInputHd" min="0" max="100" value="100">
-                    </div>
-                    <button id="removeColorHd" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
-                    <p id="colorPreviewHd"></p>
-                </div>
-                <!-- Box Border Color -->
-                <h3 class="collapsible">Box Border Color</h3>
-                <div class="content" style="display: flex; flex-direction: row;">
-                    <div>
-                        <label>Color Picker:  </label>
-                        <input type="color" id="colorInputBo">
-                        <br>
-                        <label for="alphaInputBo">Transparency:</label>
-                        <br>
-                        <input type="range" id="alphaInputBo" min="0" max="100" value="100">
-                    </div>
-                    <button id="removeColorBo" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
-                    <p id="colorPreviewBo"></p>
-                </div>
-
-                <!-- Accent Color -->
-                <h3 class="collapsible">Accent Color</h3>
-                <div class="content" style="display: flex;
-                    flex-direction: column;">
-                    <div style="display: flex;
-                    flex-direction: row;align-items: center;">
-                    <label>Color Picker:  </label>
-                    <input type="color" id="colorInputAc">
-                    <button id="removeColorAc" class="remove-btn" style="margin-left: 10px;">Reset Color</button>
-                    </div>
-                    <p id="colorPreviewAc"></p>
-                </div>
-
-                <!-- Text Colors -->
-                <h3 class="collapsible">Text Colors</h3>
-                <div class="content" style="display: flex;flex-direction: column;">
-                    <div style="display: flex;flex-direction: row;align-items: center;">
-                        <label>Text Color 1:  </label>
-                        <input type="color" id="colorText1">
-                        <button id="removeText1" class="remove-btn" style="margin-left: 10px;">Reset</button>
+                <div class="collapsible-wrapper">
+                    <h3 class="collapsible">Backdrop Management</h3>
+                    <div class="content">
+                        <input type="file" id="backdropFileInput" accept="image/*">
+                        <div class="button-container">
+                            <button id="saveBackdropBtn" class="save-btn">Apply Backdrop</button>
+                            <button id="removeBackdropBtn" class="remove-btn">Reset Backdrop</button>
+                        </div>
                     </div>
 
-                    <div style="display: flex;flex-direction: row;align-items: center;">
-                        <label>Text Color 2:  </label>
-                        <input type="color" id="colorText0">
-                        <button id="removeText2" class="remove-btn" style="margin-left: 10px;">Reset</button>
+                    <h3 class="collapsible">Frame Management</h3>
+                    <div class="content">
+                        <input type="file" id="frameFileInput" accept="image/*">
+                        <div class="color-picker-group" style="margin-top: 10px;">
+                            <label>Portrait Shape:</label>
+                            <select id="portraitShapeSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="circle">Circle (Default)</option>
+                                <option value="square">Square</option>
+                                <option value="rounded">Rounded Square</option>
+                                <option value="diamond">Diamond</option>
+                                <option value="hexagon">Hexagon</option>
+                            </select>
+                        </div>
+                        <div class="button-container">
+                            <button id="saveFrameBtn" class="save-btn">Apply Frame</button>
+                            <button id="removeFrameBtn" class="remove-btn">Reset Frame</button>
+                        </div>
                     </div>
 
-                    <p id="colorPreviewAc"></p>
-                </div>
+                    <h3 class="collapsible">Box Background Color</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Box Style:</label>
+                            <select id="boxStyleSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="solid">Solid Color (Default)</option>
+                                <option value="frosted">Frosted Glass</option>
+                                <option value="parchment">Ancient Parchment</option>
+                                <option value="stone">Stone</option>
+                            </select>
+                            <label>Color:</label>
+                            <input type="color" id="colorInputBg">
+                            <label>Transparency:</label>
+                            <input type="range" id="alphaInputBg" min="0" max="100" value="100">
+                        </div>
+                        <button id="removeColorBg" class="remove-btn">Reset Color</button>
+                    </div>
 
-            </div></div>
-        </section>
+                    <h3 class="collapsible">Header Background Color</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Color:</label>
+                            <input type="color" id="colorInputHd">
+                            <label>Transparency:</label>
+                            <input type="range" id="alphaInputHd" min="0" max="100" value="100">
+                        </div>
+                        <button id="removeColorHd" class="remove-btn">Reset Color</button>
+                    </div>
+
+                    <h3 class="collapsible">Box Border Color</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Color:</label>
+                            <input type="color" id="colorInputBo">
+                            <label>Transparency:</label>
+                            <input type="range" id="alphaInputBo" min="0" max="100" value="100">
+                        </div>
+                        <button id="removeColorBo" class="remove-btn">Reset Color</button>
+                    </div>
+
+                    <h3 class="collapsible">Accent Color</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Color:</label>
+                            <input type="color" id="colorInputAc">
+                        </div>
+                        <button id="removeColorAc" class="remove-btn">Reset Color</button>
+                    </div>
+
+                    <h3 class="collapsible">Dynamic Health</h3>
+                    <div class="content">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label>Health Vignette:</label>
+                            <input type="checkbox" id="dynamicHealthToggle" style="width: 20px; height: 20px;">
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label>Health Orb Layout:</label>
+                            <input type="checkbox" id="healthOrbToggle" style="width: 20px; height: 20px;">
+                        </div>
+                        <p style="font-size: 12px; color: #ccc; margin-top: 5px;">Visual effects that react to your HP percentage.</p>
+                    </div>
+
+                    <h3 class="collapsible">Themed Cursors</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Cursor Pack:</label>
+                            <select id="cursorPackSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="default">Default System</option>
+                                <option value="sword">Steel Sword (Fighter)</option>
+                                <option value="wand">Glowing Wand (Mage)</option>
+                                <option value="dagger">Dark Dagger (Rogue)</option>
+                                <option value="claw">Dragon Claw (Monstrous)</option>
+                            </select>
+                        </div>
+                        <button id="resetCursor" class="remove-btn">Reset to Default</button>
+                    </div>
+
+                    <h3 class="collapsible">Inventory Visuals</h3>
+                    <div class="content">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label>Item Rarity Auras:</label>
+                            <input type="checkbox" id="rarityAurasToggle" style="width: 20px; height: 20px;">
+                        </div>
+                        <p style="font-size: 12px; color: #ccc; margin-top: 5px;">Adds glowing borders and auras to items based on their rarity.</p>
+                    </div>
+
+                    <h3 class="collapsible">Themed Checkboxes</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Shape:</label>
+                            <select id="checkboxShape" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="diamond">Diamond</option>
+                                <option value="square">Square</option>
+                                <option value="shield">Shield</option>
+                                <option value="skull">Skull</option>
+                                <option value="circle">Classic Circle</option>
+                            </select>
+                            <label>Checkbox Tint:</label>
+                            <input type="color" id="checkboxColor" value="#ff0000">
+                            <label>Glow Intensity:</label>
+                            <input type="range" id="checkboxGlow" min="0" max="100" value="50">
+                        </div>
+                        <button id="resetCheckboxes" class="remove-btn">Disable Theming</button>
+                    </div>
+
+                    <h3 class="collapsible">Custom Fonts</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Character Sheet Font:</label>
+                            <select id="fontSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="default">Default Site Font</option>
+                                <option value="Cinzel">Cinzel (Classic RPG)</option>
+                                <option value="MedievalSharp">MedievalSharp (Fantasy)</option>
+                                <option value="Pirata One">Pirata One (Gothic)</option>
+                                <option value="Orbitron">Orbitron (Sci-Fi)</option>
+                                <option value="Permanent Marker">Permanent Marker (Handwritten)</option>
+                                <option value="EB Garamond">EB Garamond (Elegant)</option>
+                            </select>
+                        </div>
+                        <button id="resetFont" class="remove-btn">Reset to Default</button>
+                    </div>
+
+                    <h3 class="collapsible">Particle Effects</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Effect Type:</label>
+                            <select id="particleEffectType" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="none">None</option>
+                                <option value="leaves">Autumn Leaves</option>
+                                <option value="gears">Clockwork Gears</option>
+                                <option value="sand">Desert Sand</option>
+                                <option value="eldritch">Eldritch Sparks</option>
+                                <option value="embers">Fire Embers</option>
+                                <option value="green_leaves">Green Leaves</option>
+                                <option value="magic">Holy/Healing Light</option>
+                                <option value="lightning">Lightning Flashes</option>
+                                <option value="petals">Pink Petals</option>
+                                <option value="rain">Rain Drops</option>
+                                <option value="bubbles">Rising Bubbles</option>
+                                <option value="fog">Rolling Fog</option>
+                                <option value="snow">Soft Snow</option>
+                                <option value="stars">Twinkling Stars</option>
+                            </select>
+                            <label>Intensity:</label>
+                            <input type="range" id="particleIntensity" min="1" max="100" value="50">
+                            <label>Particle Tint:</label>
+                            <input type="color" id="particleColor" value="#ffffff">
+                        </div>
+                        <button id="resetParticles" class="remove-btn">Disable Particles</button>
+                    </div>
+
+                    <h3 class="collapsible">Text Colors</h3>
+                    <div class="content">
+                        <div class="color-picker-group">
+                            <label>Text Color 1:</label>
+                            <input type="color" id="colorText1">
+                            <button id="removeText1" class="remove-btn">Reset</button>
+                        </div>
+                        <div class="color-picker-group">
+                            <label>Text Color 2:</label>
+                            <input type="color" id="colorText0">
+                            <button id="removeText2" class="remove-btn">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 

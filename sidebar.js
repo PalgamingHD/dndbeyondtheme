@@ -1,403 +1,392 @@
 function injectFileSelector() {
-    console.log("Injecting sidebar...");
-  
-    // Check if the sidebar already exists
-    const existingSidebar = document.getElementById("backdrop-selector");
-    if (existingSidebar) {
-      // console.log("⚠️ Sidebar already exists. Toggling visibility...");
-      // Use consistent transform values (percentages in this case)
-      const isVisible = existingSidebar.style.transform === "translateX(0%)";
-      existingSidebar.style.transform = isVisible ? "translateX(100%)" : "translateX(0%)";
-      return;
-    }
-  
-    // Otherwise, create the sidebar container
-    // console.log("⚙️ Creating sidebar...");
-    const container = document.createElement("div");
-    container.id = "backdrop-selector";
-    container.style.pointerEvents = "none";
-    container.style.top = "3.5vh";
-    container.className = "ct-primary-box";
-    container.style.zIndex = "99999";
-    container.style.position = "absolute";
-    container.style.right = "0";
-    container.style.width = "300px";
-    container.style.padding = "20px";
-    container.style.height = "calc(130vh - 3.5vh)";
-   container.style.maxHeight = "calc(100vh - 3.5vh)";
-   container.style.boxSizing = "border-box";
-   container.style.overflowY = "auto";
-    container.style.borderRadius = "0";
-    container.style.transform = "translateX(100%)"; // Start off-screen
-    container.style.transition = "transform 0.5s ease"; // Add transition for sliding effect
-  
-    // Create a container for the sidebar HTML
-    const innerCon = document.createElement("div");
-    innerCon.id = "backdrop-selector-iframe";
-    innerCon.style.width = "100%";
-    innerCon.style.height = "100%";
-    innerCon.style.top = "20px";
-    innerCon.style.border = "none";
-    innerCon.style.overflow = "hidden";
-  
-    // Fetch and inject the external HTML content
-    const url = chrome.runtime.getURL("sidebar.html");
-    fetch(url)
-      .then(response => response.text())
-      .then(html => {
-        innerCon.innerHTML = html;
-  
-        // Inject the CSS file into the sidebar
+  const existingSidebar = document.getElementById("backdrop-selector");
+  if (existingSidebar) {
+    const isVisible = existingSidebar.style.transform === "translateX(0%)";
+    existingSidebar.style.transform = isVisible ? "translateX(100%)" : "translateX(0%)";
+    return;
+  }
+
+  const container = document.createElement("div");
+  container.id = "backdrop-selector";
+  container.className = "customizer-sidebar-container";
+  container.style.transform = "translateX(100%)";
+  container.style.transition = "transform 0.5s ease";
+
+  const url = chrome.runtime.getURL("sidebar.html");
+  fetch(url)
+    .then(response => response.text())
+    .then(html => {
+      container.innerHTML = html;
+      document.body.appendChild(container);
+
+      // Inject CSS
+      if (!document.getElementById("customizer-styles")) {
         const link = document.createElement("link");
+        link.id = "customizer-styles";
         link.rel = "stylesheet";
         link.href = chrome.runtime.getURL("styles.css");
         document.head.appendChild(link);
-  
-        // Collapsible Section Logic
-        const svgDown = document.querySelector(".ddbc-svg.down");
-        const svgCenter = document.querySelector(".ddbc-svg.center");
-        const collapsibles = container.querySelectorAll(".collapsible");
-        collapsibles.forEach(coll => {
-          coll.style.cursor = "pointer";
-          coll.style.padding = "10px";
-          coll.style.width = "100%";
-          coll.style.border = "none";
-          coll.style.textAlign = "left";
-          coll.style.outline = "none";
-          coll.style.fontSize = "16px";
-          coll.style.borderBottom = "1px solid rgba(255, 255, 255, 0.2)";
-          coll.style.marginBottom = "10px";
-          coll.addEventListener("click", function () {
-            this.classList.toggle("active");
-            const content = this.nextElementSibling;
-            content.classList.toggle("active");
-  
-            // Toggle height animation
-            const currentBottom = window.getComputedStyle(svgDown)['bottom'];
-            if (content.style.maxHeight && content.style.maxHeight !== "0px") {
-              content.style.maxHeight = "0";
-              if (svgDown) {
-                let bottom = parseInt(currentBottom) + (content.scrollHeight - 14);
-                if (bottom > 264) {
-                  bottom = 264;
-                }
-                svgDown.style.bottom = bottom + "px";
-                if ((bottom >=203)&&svgCenter){
-                  svgCenter.style.display = "none"
-                }
-              }
-            } 
-            else {
-              content.style.maxHeight = content.scrollHeight + "px";
-              if (svgDown) {
-                let bottom = parseInt(currentBottom) - (content.scrollHeight - 14);
-                if (bottom < -110) {
-                  bottom = -110;
-                }
-                svgDown.style.bottom = bottom + "px";
-                if ((bottom <203)&&svgCenter){
-                  svgCenter.style.display = "block"
-                }
-              }
-            }
-          });
+      }
+
+      // Collapsible Logic
+      const collapsibles = container.querySelectorAll(".collapsible");
+      collapsibles.forEach(coll => {
+        coll.addEventListener("click", function() {
+          this.classList.toggle("active");
+          const content = this.nextElementSibling;
+          content.classList.toggle("active");
         });
-  
-        // Rainbow mode button event listener
-        const rainbowModeBtn = document.getElementById('rainbowModeBtn');
-        if (rainbowModeBtn) {
-          rainbowModeBtn.addEventListener('click', function () {
-            let currentValue = this.value;
-            if (currentValue === '1') {
-              startRainbowMode();
-            } else {
-              stopRainbowMode();
-              this.style.backgroundColor = '#3b353688';
-            }
-            this.value = currentValue === '1' ? '0' : '1';
-            this.textContent = this.value === '1' ? 'Party Time?' : 'Party Time!';
-          });
-        }
-  
-        // Re-bind event listeners for controls after HTML injection
-        const fileInputBd = innerCon.querySelector("#backdropFileInput");
-         const frameFileInputBd = innerCon.querySelector("#frameFileInput");
-        const colorInputBg = innerCon.querySelector("#colorInputBg");
-        const alphaInputBg = innerCon.querySelector("#alphaInputBg");
-        const colorInputHd = innerCon.querySelector("#colorInputHd");
-        const alphaInputHd = innerCon.querySelector("#alphaInputHd");
-        const colorInputBo = innerCon.querySelector("#colorInputBo");
-        const alphaInputBo = innerCon.querySelector("#alphaInputBo");
-        const colorInputAc = innerCon.querySelector("#colorInputAc");
-        const colorText1 = innerCon.querySelector("#colorText1");
-        const colorText0 = innerCon.querySelector("#colorText0");
-  
-        const saveBtnBd = innerCon.querySelector("#saveBackdropBtn");
-        const frameSaveBtnBd = innerCon.querySelector("#saveFrameBtn");
+      });
 
-        const removeBtnBd = innerCon.querySelector("#removeBackdropBtn");
-      const frameRemoveBtnBd = innerCon.querySelector("#removeFrameBtn");
-        const removeBtnBg = innerCon.querySelector("#removeColorBg");
-         const removeBtnHd = innerCon.querySelector("#removeColorHd");
-        const removeBtnBo = innerCon.querySelector("#removeColorBo");
-        const removeBtnAc = innerCon.querySelector("#removeColorAc");
-        const removeText1 = innerCon.querySelector("#removeText1");
-        const removeText0 = innerCon.querySelector("#removeText2");
-        
-        const resetBtn = innerCon.querySelector("#resetBtn");
+      // Event Listeners Binding
+      setupEventListeners(container);
 
-        const closeArrowBtn = innerCon.querySelector("#closeArrowSide");
-        if (closeArrowBtn) {
-          closeArrowBtn.addEventListener("click", () => {
-            container.style.transform = "translateX(100%)"; // Slide out
-          });
-        }
+      // Initialize values
+      setTimeout(updateColorPickers, 100);
+
+      // Slide in
+      setTimeout(() => {
+        container.style.transform = "translateX(0%)";
+      }, 50);
+    });
+}
+
+function setupEventListeners(sidebar) {
+  // Close Button
+  sidebar.querySelector("#closeArrowSide").addEventListener("click", () => {
+    sidebar.style.transform = "translateX(100%)";
+  });
+
+  // Rainbow Mode
+  const rainbowBtn = sidebar.querySelector('#rainbowModeBtn');
+  rainbowBtn.addEventListener('click', function() {
+    if (this.value === '1') {
+      startRainbowMode();
+      this.value = '0';
+      this.textContent = 'Party Time!';
+    } else {
+      stopRainbowMode();
+      this.value = '1';
+      this.textContent = 'Party Time?';
+      this.style.backgroundColor = '';
+    }
+  });
+
+  // Backdrop
+  sidebar.querySelector("#saveBackdropBtn").addEventListener("click", () => {
+    saveBackdrop(sidebar.querySelector("#backdropFileInput"));
+  });
+  sidebar.querySelector("#removeBackdropBtn").addEventListener("click", () => {
+    removeBackdrop();
+    location.reload();
+  });
+
+  // Frame
+  sidebar.querySelector("#saveFrameBtn").addEventListener("click", () => {
+    saveFrame(sidebar.querySelector("#frameFileInput"));
+  });
+  sidebar.querySelector("#removeFrameBtn").addEventListener("click", () => {
+    removeFrame();
+    location.reload();
+  });
+
+  // UI Elements
+  const particleType = sidebar.querySelector("#particleEffectType");
+  const particleIntensity = sidebar.querySelector("#particleIntensity");
+  const particleColor = sidebar.querySelector("#particleColor");
+  const dynamicHealthToggle = sidebar.querySelector("#dynamicHealthToggle");
+  const healthOrbToggle = sidebar.querySelector("#healthOrbToggle");
+  const rarityAurasToggle = sidebar.querySelector("#rarityAurasToggle");
+  const cursorPackSelect = sidebar.querySelector("#cursorPackSelect");
+  const checkboxColor = sidebar.querySelector("#checkboxColor");
+  const checkboxGlow = sidebar.querySelector("#checkboxGlow");
+  const checkboxShape = sidebar.querySelector("#checkboxShape");
+  const portraitShapeSelect = sidebar.querySelector("#portraitShapeSelect");
+  const fontSelect = sidebar.querySelector("#fontSelect");
+  const boxStyleSelect = sidebar.querySelector("#boxStyleSelect");
+
+  portraitShapeSelect.addEventListener("change", (e) => {
+    saveColor(e.target.value, 'portraitShape');
+    if (window.applyPortraitShape) window.applyPortraitShape(e.target.value);
+  });
+
+  boxStyleSelect.addEventListener("change", (e) => {
+    saveColor(e.target.value, 'boxStyle');
+    if (window.applyBackgroundColor) {
+        const color = sidebar.querySelector("#colorInputBg").value;
+        const alpha = Math.round((sidebar.querySelector("#alphaInputBg").value / 100) * 255).toString(16).padStart(2, '0');
+        window.applyBackgroundColor(`${color}${alpha}`);
+    }
+  });
+
+  // Colors
+  const bindColor = (id, alphaId, type, applyFunc) => {
+    const input = sidebar.querySelector(`#${id}`);
+    const alphaInput = alphaId ? sidebar.querySelector(`#${alphaId}`) : null;
+    
+    const update = () => {
+      const hex = input.value;
+      const alpha = alphaInput ? Math.round((alphaInput.value / 100) * 255).toString(16).padStart(2, '0') : 'ff';
+      const color = `${hex}${alpha}`;
+      saveColor(color, type);
+      window[applyFunc](color);
+    };
+
+    input.addEventListener("input", update);
+    if (alphaInput) alphaInput.addEventListener("input", update);
+  };
+
+  bindColor("colorInputBg", "alphaInputBg", "background", "applyBackgroundColor");
+  bindColor("colorInputHd", "alphaInputHd", "header", "applyHeaderColor");
+  bindColor("colorInputBo", "alphaInputBo", "border", "applyBorderColor");
   
-        // Set current colors from existing DOM elements
-        const rgbToHex = rgb => "#" + rgb.match(/\d+/g).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
-        const ddbcBox = document.querySelector('.ddbc-box-background:first-child');
-        if (ddbcBox) {
-          const allChildren = Array.from(ddbcBox.querySelectorAll("path, polygon"));
-          if (allChildren.length > 0) {
-            window.currentColorBg = allChildren[0].getAttribute("fill");
-            window.currentColorBo = allChildren[allChildren.length - 1].getAttribute("fill");
-          }
-        }
-        window.currentColorAc = window.getComputedStyle(document.documentElement).getPropertyValue('--theme-color');
-        window.currentColorText1 = rgbToHex(window.getComputedStyle(document.querySelector("#character-tools-target > div > div.ct-character-sheet__inner > div > div.ct-quick-info > div.ct-quick-info__box.ct-quick-info__box--speed > section > div.ct-speed-box__box-value.ct-speed-box__box-value > span > span:nth-child(1)")).color);
-        window.currentColorText0 = rgbToHex(window.getComputedStyle(document.querySelector("#character-tools-target > div > div.ct-character-sheet__inner > div > div.ct-subsections > div.ct-subsection.ct-subsection--skills > section > div.ct-skills.ct-skills > div.ct-skills__header > div.ct-skills__col--modifier > span")).color);
+  const defaultParticleColors = {
+    none: "#ffffff",
+    embers: "#ff6600",
+    gears: "#b87333",
+    rain: "#aec2e0",
+    snow: "#ffffff",
+    eldritch: "#a349a4",
+    magic: "#ffffc8",
+    leaves: "#d35400",
+    green_leaves: "#2d5a27",
+    petals: "#ffc0cb",
+    bubbles: "#88ccff",
+    sand: "#f4d03f",
+    fog: "#ffffff",
+    stars: "#ffffff",
+    lightning: "#ffffff"
+  };
+
+  const updateParts = (isTypeChange = false) => {
+    if (isTypeChange) {
+      const newDefault = defaultParticleColors[particleType.value];
+      if (newDefault) particleColor.value = newDefault;
+    }
+    saveColor(particleType.value, 'particleType');
+    saveColor(particleIntensity.value, 'particleIntensity');
+    saveColor(particleColor.value, 'particleColor');
+    if (window.applyParticles) window.applyParticles(particleType.value, particleIntensity.value, particleColor.value);
+  };
+
+  particleType.addEventListener("change", () => updateParts(true));
+  particleIntensity.addEventListener("input", () => updateParts(false));
+  particleColor.addEventListener("input", () => updateParts(false));
+
+  dynamicHealthToggle.addEventListener("change", (e) => {
+    saveColor(e.target.checked ? 'true' : 'false', 'dynamicHealth');
+    if (window.checkHealth) window.checkHealth();
+  });
+
+  healthOrbToggle.addEventListener("change", (e) => {
+    saveColor(e.target.checked ? 'true' : 'false', 'healthOrb');
+    if (window.checkHealth) window.checkHealth();
+  });
+
+  rarityAurasToggle.addEventListener("change", (e) => {
+    saveColor(e.target.checked ? 'true' : 'false', 'rarityAuras');
+    if (window.applyRarityAuras) window.applyRarityAuras();
+  });
+
+  cursorPackSelect.addEventListener("change", (e) => {
+    saveColor(e.target.value, 'cursorPack');
+    if (window.applyCursor) window.applyCursor(e.target.value);
+  });
+
+  sidebar.querySelector("#resetCursor").addEventListener("click", () => {
+    cursorPackSelect.value = "default";
+    saveColor("default", "cursorPack");
+    if (window.applyCursor) window.applyCursor("default");
+  });
+
+  const updateChecks = () => {
+    saveColor(checkboxColor.value, 'checkboxColor');
+    saveColor(checkboxGlow.value, 'checkboxGlow');
+    saveColor(checkboxShape.value, 'checkboxShape');
+    if (window.applyCheckboxTheming) window.applyCheckboxTheming(checkboxColor.value, checkboxGlow.value, checkboxShape.value);
+  };
+
+  checkboxColor.addEventListener("input", updateChecks);
+  checkboxGlow.addEventListener("input", updateChecks);
+  checkboxShape.addEventListener("change", updateChecks);
+
+  fontSelect.addEventListener("change", (e) => {
+    saveColor(e.target.value, 'customFont');
+    if (window.applyFont) window.applyFont(e.target.value);
+  });
+
+  sidebar.querySelector("#resetFont").addEventListener("click", () => {
+    fontSelect.value = "default";
+    saveColor("default", "customFont");
+    if (window.applyFont) window.applyFont("default");
+  });
+
+  sidebar.querySelector("#resetCheckboxes").addEventListener("click", () => {
+    const characterID = getCharacterID();
+    if (characterID) {
+      chrome.storage.local.remove([`checkboxColor_${characterID}`, `checkboxGlow_${characterID}`, `checkboxShape_${characterID}`], () => {
+        location.reload();
+      });
+    }
+  });
+
+  sidebar.querySelector("#resetParticles").addEventListener("click", () => {
+    particleType.value = "none";
+    saveColor("none", "particleType");
+    if (window.applyParticles) window.applyParticles("none");
+  });
+
+  sidebar.querySelector("#colorInputAc").addEventListener("input", (e) => {
+    const color = e.target.value + 'ff';
+    saveColor(color, 'accent');
+    applyAccentColor(color);
+  });
+
+  sidebar.querySelector("#colorText1").addEventListener("input", (e) => {
+    saveColor(e.target.value, 'text1');
+    applyTextColor(e.target.value, 1);
+  });
+
+  sidebar.querySelector("#colorText0").addEventListener("input", (e) => {
+    saveColor(e.target.value, 'text0');
+    applyTextColor(e.target.value, 0);
+  });
+
+  // Reset Buttons
+  sidebar.querySelector("#removeColorBg").addEventListener("click", () => { removeColor("background"); location.reload(); });
+  sidebar.querySelector("#removeColorHd").addEventListener("click", () => { removeColor("header"); location.reload(); });
+  sidebar.querySelector("#removeColorBo").addEventListener("click", () => { removeColor("border"); location.reload(); });
+  sidebar.querySelector("#removeColorAc").addEventListener("click", () => { removeColor("accent"); location.reload(); });
+  sidebar.querySelector("#removeText1").addEventListener("click", () => { removeColor("text1"); location.reload(); });
+  sidebar.querySelector("#removeText2").addEventListener("click", () => { removeColor("text0"); location.reload(); });
+
+  sidebar.querySelector("#resetBtn").addEventListener("click", () => {
+    if (confirm("Remove all customizations?")) {
+      ['background', 'header', 'border', 'accent', 'text1', 'text0', 'boxStyle', 'portraitShape', 'customFont', 'cursorPack', 'dynamicHealth'].forEach(removeColor);
+      removeBackdrop();
+      removeFrame();
+      location.reload();
+    }
+  });
+}
+
+function updateColorPickers() {
+  const characterID = getCharacterID();
+  if (!characterID) return;
+
+  const storage = typeof browser !== "undefined" ? browser.storage.local : chrome.storage.local;
+  const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'dynamicHealth', 'healthOrb', 'rarityAuras', 'cursorPack', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle'];
   
-        // Function to update color pickers with stored values
-        function updateColorPickers() {
-          try{const colorInputBg = document.getElementById("colorInputBg");
-            const colorInputHd = document.getElementById("colorInputHd");
-          const colorInputBo = document.getElementById("colorInputBo");
-          const colorInputAc = document.getElementById("colorInputAc");
-          const colorText1 = document.getElementById("colorText1");
-          const colorText0 = document.getElementById("colorText0");
-          if (colorInputBg && window.currentColorBg) {
-            const bgColorWithoutAlpha = window.currentColorBg.length > 7 ? window.currentColorBg.slice(0, 7) : window.currentColorBg;
-            colorInputBg.value = bgColorWithoutAlpha;
-          }
-          if (colorInputHd && window.currentColorHd) {
-            const hdColorWithoutAlpha = window.currentColorHd.length > 7 ? window.currentColorHd.slice(0, 7) : window.currentColorHd;
-            colorInputHd.value = hdColorWithoutAlpha;
-          }
-          if (colorInputBo && window.currentColorBo) {
-            const boColorWithoutAlpha = window.currentColorBo.length > 7 ? window.currentColorBo.slice(0, 7) : window.currentColorBo;
-            colorInputBo.value = boColorWithoutAlpha;
-          }
-          if (colorInputAc && window.currentColorAc) {
-            const acColorWithoutAlpha = window.currentColorAc.length > 7 ? window.currentColorAc.slice(0, 7) : window.currentColorAc;
-            colorInputAc.value = acColorWithoutAlpha;
-          }
-          if (colorText1 && window.currentColorText1) {
-            const text1ColorWithoutAlpha = window.currentColorText1.length > 7 ? window.currentColorText1.slice(0, 7) : window.currentColorText1;
-            colorText1.value = text1ColorWithoutAlpha;
-          }
-          if (colorText0 && window.currentColorText0) {
-            const text0ColorWithoutAlpha = window.currentColorText0.length > 7 ? window.currentColorText0.slice(0, 7) : window.currentColorText0;
-            colorText0.value = text0ColorWithoutAlpha;
-          }
-          }catch(erro){console.error("figa non sto capendo: "+error)};
-        }
-        window.updateColorPickers = updateColorPickers;
-        setTimeout(updateColorPickers, 100);
-  
-        // Attach event listeners for controls
-        if (saveBtnBd && fileInputBd) {
-          saveBtnBd.addEventListener("click", () => {
-            if (typeof saveBackdrop === "function") {
-              saveBackdrop(fileInputBd);
-            } else {
-              console.error("saveBackdrop function not found");
-            }
-          });
-        }
-        if (frameSaveBtnBd && frameFileInputBd) {
-          frameSaveBtnBd.addEventListener("click", () => {
-            if (typeof saveFrame === "function") {
-              saveFrame(frameFileInputBd);
-            } else {
-              console.error("save Frame function not found");
-            }
-          });
-        }
-        if (colorInputBg && alphaInputBg) {
-          // console.log("🎨 Color inputs detected. Attaching event listeners...");
-          colorInputBg.addEventListener("input", updateBackgroundColor);
-          alphaInputBg.addEventListener("input", updateBackgroundColor);
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (colorInputHd && alphaInputHd) {
-          // console.log("🎨 Color inputs detected. Attaching event listeners...");
-          colorInputHd.addEventListener("input", updateHeaderColor);
-          alphaInputHd.addEventListener("input", updateHeaderColor);
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (colorInputBo && alphaInputBo) {
-          // console.log("🎨 Color inputs detected. Attaching event listeners...");
-          colorInputBo.addEventListener("input", updateBorderColor);
-          alphaInputBo.addEventListener("input", updateBorderColor);
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (colorInputAc) {
-          // console.log("🎨 Color inputs detected. Attaching event listeners...");
-          colorInputAc.addEventListener("input", updateAccentColor);
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (colorText1) {
-          colorText1.addEventListener("input", ()=>{updateTextColor(1)});
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (colorText0) {
-          // console.log("🎨 Color inputs detected. Attaching event listeners...");
-          colorText0.addEventListener("input", ()=>{updateTextColor(0)});
-        } else {
-          console.error("❌ Color inputs not found in the DOM.");
-        }
-        if (removeBtnBd) {
-          removeBtnBd.addEventListener("click", () => {
-            if (typeof removeBackdrop === "function") {
-              removeBackdrop();
-            }
-            location.reload();
-          });
-        }
-        if (frameRemoveBtnBd) {
-          frameRemoveBtnBd.addEventListener("click", () => {
-            if (typeof removeFrame === "function") {
-              removeFrame();
-            }
-            location.reload();
-          });
-        }
-        if (removeBtnBg) {
-          removeBtnBg.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("background");
-              location.reload();
-            }
-          });
-        }
-        if (removeBtnHd) {
-          removeBtnHd.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("header");
-              location.reload();
-            }
-          });
-        }
-        if (removeBtnBo) {
-          removeBtnBo.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("border");
-              location.reload();
-            }
-          });
-        }
-        if (removeBtnAc) {
-          removeBtnAc.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("accent");
-              location.reload();
-            }
-          });
-        }
-        if (removeText1) {
-          removeText1.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("text1");
-              location.reload();
-            }
-          });
-        }
-        if (removeText0) {
-          removeText0.addEventListener("click", () => {
-            if (typeof removeColor === "function") {
-              removeColor("text0");
-              location.reload();
-            }
-          });
-        }
-        if (resetBtn) {
-          resetBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to remove all the customizations?")) {
-              if (typeof removeColor === "function") {
-                removeColor("background");
-               removeColor("header");
-                removeColor("border");
-                removeColor("accent");
-                removeColor("text1");
-                removeColor("text0");
-              }
-              if (typeof removeBackdrop === "function") {
-                removeBackdrop();
-              }
-              if (typeof removeFrame === "function") {
-                removeFrame();
-              }
-              location.reload();
-            }
-          });
-        }
-  
-        // Functions to update colors (assume saveColor, applyBackgroundColor, applyBorderColor, applyAccentColor are defined)
-        function updateBackgroundColor() {
-          const hex = colorInputBg.value;
-          const alpha = Math.round((alphaInputBg.value / 100) * 255);
-          const alphaHex = alpha.toString(16).padStart(2, '0');
-          const hexWithAlpha = `#${hex.slice(1)}${alphaHex}`;
-          // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
-          saveColor(hexWithAlpha, 'background');
-          applyBackgroundColor(hexWithAlpha);
-        }
-         function updateHeaderColor() {
-          const hex = colorInputHd.value;
-          const alpha = Math.round((alphaInputHd.value / 100) * 255);
-          const alphaHex = alpha.toString(16).padStart(2, '0');
-          const hexWithAlpha = `#${hex.slice(1)}${alphaHex}`;
-          // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
-          saveColor(hexWithAlpha, 'header');
-          applyHeaderColor(hexWithAlpha);
-        }
-        function updateBorderColor() {
-          const hex = colorInputBo.value;
-          const alpha = Math.round((alphaInputBo.value / 100) * 255);
-          const alphaHex = alpha.toString(16).padStart(2, '0');
-          const hexWithAlpha = `#${hex.slice(1)}${alphaHex}`;
-          // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
-          saveColor(hexWithAlpha, 'border');
-          applyBorderColor(hexWithAlpha);
-        }
-        function updateAccentColor() {
-          const hex = colorInputAc.value;
-          const hexWithAlpha = `#${hex.slice(1)}ff`;
-          // console.log(`🎨 Chosen Color: ${hexWithAlpha}`);
-          saveColor(hexWithAlpha, 'accent');
-          applyAccentColor(hexWithAlpha);
-        }
-        function updateTextColor(num) {
-          const hex = (num) ? colorText1.value : colorText0.value;
-          // console.log(`text${(num)}`)
-          saveColor(hex, `text${(num)}`);
-          applyTextColor(hex, num);
-        }
-      })
-      .catch(err => console.error("Error fetching sidebar:", err));
-  
-    container.appendChild(innerCon);
-    document.body.appendChild(container);
-  
-    // Trigger sliding animation on injection
-    setTimeout(() => {
-      container.style.transform = "translateX(0%)"; // Slide in
-    }, 50);
-  }
-  
-window.injectFileSelector = injectFileSelector
+  types.forEach(type => {
+    storage.get(`${type}_${characterID}`).then(data => {
+      const val = data[`${type}_${characterID}`];
+      if (!val) return;
+
+      if (type === 'healthOrb') {
+        const toggle = document.getElementById("healthOrbToggle");
+        if (toggle) toggle.checked = val === 'true';
+        return;
+      }
+      if (type === 'rarityAuras') {
+        const toggle = document.getElementById("rarityAurasToggle");
+        if (toggle) toggle.checked = val === 'true';
+        return;
+      }
+      if (type === 'boxStyle') {
+        const select = document.getElementById("boxStyleSelect");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'customFont') {
+        const select = document.getElementById("fontSelect");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'portraitShape') {
+        const select = document.getElementById("portraitShapeSelect");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'checkboxShape') {
+        const select = document.getElementById("checkboxShape");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'checkboxColor') {
+        const input = document.getElementById("checkboxColor");
+        if (input) input.value = val;
+        return;
+      }
+      if (type === 'checkboxGlow') {
+        const slider = document.getElementById("checkboxGlow");
+        if (slider) slider.value = val;
+        return;
+      }
+      if (type === 'cursorPack') {
+        const select = document.getElementById("cursorPackSelect");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'dynamicHealth') {
+        const toggle = document.getElementById("dynamicHealthToggle");
+        if (toggle) toggle.checked = val === 'true';
+        return;
+      }
+
+      if (type === 'particleType') {
+        const select = document.getElementById("particleEffectType");
+        if (select) select.value = val;
+        return;
+      }
+      if (type === 'particleIntensity') {
+        const slider = document.getElementById("particleIntensity");
+        if (slider) slider.value = val;
+        return;
+      }
+      if (type === 'particleColor') {
+        const pColor = document.getElementById("particleColor");
+        if (pColor) pColor.value = val;
+        return;
+      }
+
+      const hex = val.slice(0, 7);
+      const alpha = val.length > 7 ? parseInt(val.slice(7, 9), 16) : 255;
+      
+      let inputId;
+      switch(type) {
+        case 'background': inputId = 'colorInputBg'; break;
+        case 'header': inputId = 'colorInputHd'; break;
+        case 'border': inputId = 'colorInputBo'; break;
+        case 'accent': inputId = 'colorInputAc'; break;
+        case 'text1': inputId = 'colorText1'; break;
+        case 'text0': inputId = 'colorText0'; break;
+      }
+
+      const input = document.getElementById(inputId);
+      if (input) input.value = hex;
+
+      if (type === 'background' || type === 'header' || type === 'border') {
+        const alphaInput = document.getElementById(inputId.replace('color', 'alpha'));
+        if (alphaInput) alphaInput.value = Math.round((alpha / 255) * 100);
+      }
+    });
+  });
+}
+
+function removeBackdrop() {
+  const id = window.getCharacterID ? window.getCharacterID() : null;
+  if (id) chrome.storage.local.remove(`backdrop_${id}`);
+}
+
+function removeFrame() {
+  const id = window.getCharacterID ? window.getCharacterID() : null;
+  if (id) chrome.storage.local.remove(`frame_${id}`);
+}
+
+function removeColor(type) {
+  const id = window.getCharacterID ? window.getCharacterID() : null;
+  if (id) chrome.storage.local.remove(`${type}_${id}`);
+}
+
+window.injectFileSelector = injectFileSelector;
+window.updateColorPickers = updateColorPickers;

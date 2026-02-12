@@ -1,222 +1,406 @@
-/* Header sidebar styles */
-.headerSidebar {
-  color: #eeeeee;
-  padding: 0px;
-  text-align: center;
-  font-size: 19px;
-  margin-top: 18px;
-  margin-bottom: 0px;
+/* Root and Variables */
+:root {
+  --theme-color: #be1e2d;
+  --box-bg-color: rgba(18, 18, 18, 0.95);
+  --sidebar-width: 320px;
 }
 
-/* Collapsible Header Styles */
-.collapsible {
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
-  background-color: #33333388;
-  color: #eeeeee !important;
-  padding: 10px;
-  border: none;
-  text-align: left;
+/* Sidebar Container */
+.customizer-sidebar-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  max-height: 100vh;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  font-family: 'Roboto', Helvetica, sans-serif;
+  overflow: visible;
+}
+
+.customizer-sidebar-container * {
+  pointer-events: auto;
+}
+
+/* Layout Fixes */
+#site-main {
+  padding-top: 0 !important;
+}
+
+.ct-character-sheet {
+  margin-top: 0 !important;
+}
+
+.body-rpgcharacter-sheet {
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+#site-main, .site, #site {
+  height: auto !important;
+}
+
+/* Close Button */
+#closeArrowSide {
+  position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--box-bg-color);
+  border: 1px solid var(--theme-color);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  padding: 10px 5px;
   cursor: pointer;
-  outline: none;
-  transition: background-color 0.2s ease;
+  fill: #eee;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
 }
-  
-.collapsible:hover,
-.collapsible.active {
-  background-color: #44444488;
-  color: #eeeeee !important;
+
+#closeArrowSide:hover {
+  fill: var(--theme-color);
+  padding-left: 8px;
 }
-  
-/* Content Container Styles */
-.content {
-  padding: 0px;
-  padding-top: 10px;
-  padding-left: 5px;
-  padding-right: 5px;
-  background-color: #22222288;
-  border-top: 2px solid #444;
-  border-bottom: 2px solid #444;
-  max-height: 0px;
+
+/* Sidebar Frame */
+.sidebar-frame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--box-bg-color);
+  box-shadow: -5px 0 15px rgba(0,0,0,0.5);
   overflow: hidden;
-  transition: max-height 0.2s ease-out;
 }
 
-/* When active, allow the content to expand */
+/* Decorative SVGs */
+.frame-svg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.frame-svg-up, .frame-svg-down {
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.frame-svg-center {
+  flex-grow: 1;
+  width: 100%;
+  position: relative;
+  background: var(--box-bg-color);
+}
+
+.center-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7.2px; /* Matching SVG path padding */
+  right: 8px;
+  background: var(--box-bg-color);
+}
+
+.center-border-left, .center-border-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3.4px;
+  background: var(--theme-color);
+}
+
+.center-border-left { left: 5.7px; }
+.center-border-right { right: 5.7px; }
+
+.frame-svg-up path.bg, .frame-svg-down path.bg { fill: transparent; }
+.frame-svg-up path.bo, .frame-svg-down path.bo { fill: var(--theme-color); }
+
+/* Scrollable Content */
+.sidebar-content-scrollable {
+  position: relative;
+  z-index: 2;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 25px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-color) transparent;
+}
+
+.sidebar-content-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content-scrollable::-webkit-scrollbar-thumb {
+  background-color: var(--theme-color);
+  border-radius: 10px;
+}
+
+/* Header Area */
+.headerSidebar {
+  color: #eee;
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--theme-color);
+  padding-bottom: 10px;
+}
+
+.top-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+/* Collapsible Sections */
+.collapsible {
+  background: rgba(255, 255, 255, 0.05);
+  color: #eee;
+  cursor: pointer;
+  padding: 12px 15px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  outline: none;
+  font-size: 16px;
+  font-weight: bold;
+  transition: 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: var(--theme-color);
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.collapsible.active:after {
+  content: "\2212";
+}
+
+.collapsible:hover, .collapsible.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--theme-color);
+}
+
+.content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0 15px;
+  border-left: 1px solid var(--theme-color);
+  border-right: 1px solid var(--theme-color);
+}
+
 .content.active {
-  max-height: 1000px;
-  /* justify-content: center; */
+  max-height: 500px;
+  padding: 15px;
+  border-bottom: 1px solid var(--theme-color);
 }
 
-#color-picker-container.active {
-  max-height: 300px !important; /* Adjust this value as needed */
-  overflow-y: auto !important;
+/* UI Elements */
+.color-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
-  
-/* Input File Styles */
-#backdropFileInput {
+.color-picker-group label {
+  color: #ccc;
+  font-size: 14px;
+}
+
+input[type="color"] {
   width: 100%;
-  margin-bottom: 10px;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
 }
 
-#frameFileInput {
+input[type="range"] {
   width: 100%;
-  margin-bottom: 10px;
+  accent-color: var(--theme-color);
 }
 
-/* Save Button Styles */
 .button-container {
   display: flex;
-  justify-content: center; /* Adjusts the space between the buttons */
-  gap: 10px; /* Optional: Adds space between the buttons */
+  gap: 8px;
+  margin-top: 10px;
 }
 
-/* Ensure buttons take up equal space */
-button.save-btn, button.remove-btn {
+button {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+  font-size: 13px;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+  flex: 2;
+}
+
+.save-btn:hover { background: #218838; }
+
+.remove-btn {
+  background: #dc3545;
+  color: white;
   flex: 1;
 }
 
-button.save-btn {
-  background-color: #28a745;
-  color: #ffffff;
-  border: none;
-  padding: 10px;
-  margin-right: 5px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  flex-grow: 0;
+.remove-btn:hover { background: #c82333; }
+
+.rainbow-btn {
+  background: #333;
+  color: white;
+  flex: 1;
 }
 
-button.save-btn:hover {
-  background-color: #218838;
+.rainbow-btn:hover {
+  background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+  animation: rainbow-bg 2s linear infinite;
 }
 
-/* Remove Button Styles */
-button.remove-btn {
-  background-color: #dc3545;
-  color: #ffffff;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  flex-grow: 0;
+@keyframes rainbow-bg {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
-button.remove-btn:hover {
-  background-color: #c82333;
+/* Dynamic Health Effects */
+#health-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999998; /* Just below customizer but above everything else */
+  box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
+  transition: box-shadow 0.5s ease;
 }
 
-/* Remove Button Styles */
-button.rainbow-btn {
-  position: relative;
-  /* float: right; */
-  background-color: #3b353688;
-  color: #ffffff;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+.health-bloodied #health-vignette {
+  box-shadow: inset 0 0 100px rgba(255, 100, 0, 0.3) !important;
 }
 
-button.rainbow-btn[value="1"]:hover {
-  background: linear-gradient(90deg, rgba(255, 0, 0), rgba(255, 165, 0), rgba(255, 255, 0), rgba(0, 128, 0), rgba(0, 0, 255), rgba(75, 0, 130), rgba(238, 130, 238), rgba(255, 0, 0), rgba(255, 165, 0));
-  background-size: 400% 400%;
-  animation: rainbow 5s linear infinite;
-}
-button.rainbow-btn[value="0"]:hover {
-  background-color: #3b353688;
+.health-critical #health-vignette {
+  box-shadow: inset 0 0 200px rgba(255, 0, 0, 0.8) !important;
+  animation: pulse-vignette 2s infinite;
 }
 
-@keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+#health-vignette.heal-flash {
+  box-shadow: inset 0 0 80px rgba(0, 255, 0, 0.4) !important;
+  transition: none;
 }
 
-
-/* Parent element */
-.customizerSidebar {
-  position: relative;
-  width: 100%; /* Adjust as needed */
-  height: 100%; /* Adjust as needed */
+@keyframes pulse-vignette {
+  0% { box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.4); }
+  50% { box-shadow: inset 0 0 200px rgba(255, 0, 0, 0.8); }
+  100% { box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.4); }
 }
 
-.ct-sidebar2-box{
-  height: 200px;
-  padding: 0px 20px;
-  width: 281px;
-  padding-right: 23px;
-  padding-top: 37px;
+.health-bloodied .ct-character-sheet {
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5) !important;
+  border: 2px solid rgba(255, 0, 0, 0.3) !important;
 }
-/* Child elements */
-.ct-section--customizerSidebar {
-  position: relative;
-  width: 90%;
-  min-height: auto;
-  z-index: 2;
-  color: #eeeeee !important;
+
+.health-critical .ct-character-sheet {
+  box-shadow: 0 0 50px rgba(255, 0, 0, 0.8) !important;
+  border: 3px solid rgba(255, 0, 0, 0.6) !important;
 }
-.ddbc-box-background--customizerSidebar {
+
+.ddbc-character-avatar.portrait-bloodied::after {
+  content: "";
   position: absolute;
   top: 0;
-  left: -18px;
-  width: 281px;
-  height: 1100px; 
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
-  transition: height 0.3s ease-in-out;
-  background: #ff66ff00;
-  display: flex;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(139, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 11;
+  border-radius: 50%;
 }
 
-.ddbc-svg.up, .ddbc-svg.down, .ddbc-svg.center {
+/* CUSTOM FRAME OVERLAY */
+.custom-frame-overlay {
   position: absolute;
-  width: 90%;
-}
-.ddbc-svg.down{
-  bottom: 264px;
-  transition: 0.2s ease;
-}
-.ddbc-svg.center{
-  bottom: 16px !important;
-  display:none;
-}
-
-.bo.Down, .bo.Up, .bo.Center{
-  fill: var(--theme-color);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-#resetBtn, #rainbowModeBtn{
-  flex-grow: 0;
-  flex-shrink: 0;
-  white-space: nowrap;
+/* Ensure character sheet is still clearly above if we want particles behind text */
+.ct-character-sheet {
+  position: relative;
+  z-index: 10;
 }
 
-button#closeArrowSide {
-  cursor:pointer;
-  width: 20px !important;
-  height: 24px !important;
-  z-index: 1000005;
-  flex-grow: 0;
-  flex-shrink: 0;
-  fill: var(--ttui_grey-50);
-  color-scheme: dark;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  outline: 0;
-  font-family: Roboto, Helvetica, sans-serif;
-  font-size: 22px;
-  margin: 0px;
-  vertical-align: baseline;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  opacity: .6;
+/* Particle Canvas Overlay */
+#customizer-particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 5; 
+  opacity: 0.6;
 }
-button#closeArrowSide:hover {
-  fill: #ffffff !important;
+
+/* Ensure D&D Beyond sidebars stay on top */
+.ct-sidebar__portal {
+  z-index: 999999 !important;
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.ct-sidebar__portal > * {
+  pointer-events: auto;
+}
+
+.ct-character-sheet__inner {
+  background: transparent !important;
+}
+
+/* Target the D&D Beyond portrait container */
+.ddbc-character-avatar {
+  position: relative !important;
 }

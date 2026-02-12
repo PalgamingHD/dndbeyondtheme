@@ -25,71 +25,69 @@ window.waitForElement = waitForElement
 const parentSelector = "#character-tools-target > div > div.ct-character-sheet__inner > div > div.ct-character-header-desktop";
 const normalBtnSelector = "#character-tools-target > div > div.ct-character-sheet__inner > div > div.ct-character-header-desktop > div.ct-character-header-desktop__group.ct-character-header-desktop__group--short-rest > div";
 const injectedBtnId = "customizerBtn";
-const injectedBtnSvgId = "customizerBtnSvg";
 
 let injectionPending  = false
 function injectButton(){
     if (document.getElementById(injectedBtnId) || injectionPending) return;
     
-    injectionPending = true;
-    waitForElement(parentSelector, (container) => {
-        // console.log("valore buffo:" + !document.getElementById(injectedBtnId))
-        // console.log("dentro funzione")  
-        const buttonPresente = document.getElementById(injectedBtnId)   
-        if(!buttonPresente){
-                // console.log("dentro if")
-                const url = chrome.runtime.getURL("button.html");
-                fetch(url)
-                    .then(response => response.text())
-                    .then(htmlContent => {           
+    const container = document.querySelector(parentSelector);
+    if (!container) return;
 
-                        // Create a temporary container and parse the HTML
-                        const temp = document.createElement('div');
-                        temp.innerHTML = htmlContent.trim();
-                        const newElement = temp.firstElementChild;
+    injectionPending = true;
+    
+    // Double check before fetching
+    if(document.getElementById(injectedBtnId)) {
+        injectionPending = false;
+        return;
+    }
+
+    const url = chrome.runtime.getURL("button.html");
+    fetch(url)
+        .then(response => response.text())
+        .then(htmlContent => {           
+            if(!document.getElementById(injectedBtnId)){
+                const temp = document.createElement('div');
+                temp.innerHTML = htmlContent.trim();
+                const newElement = temp.firstElementChild;
+                
+                // Re-verify container and ID one last time
+                const latestContainer = document.querySelector(parentSelector);
+                if (latestContainer && !document.getElementById(injectedBtnId)) {
+                    latestContainer.insertBefore(newElement, latestContainer.childNodes[2]);
                     
-                        // Insert the new element as the first child of container
-                        container.insertBefore(newElement, container.childNodes[2]);
-                        // Get the normal button and compute its border color:
-                        const normalBtn = document.querySelector(normalBtnSelector);
+                    // Add Click Listener to open the customizer
+                    newElement.addEventListener("click", () => {
+                        injectFileSelector();
+                    });
+
+                    const normalBtn = document.querySelector(normalBtnSelector);
+                    if (normalBtn) {
                         const normalBtnColor = window.getComputedStyle(normalBtn).borderColor;
-                        
                         const injectedBtn = document.getElementById("customizerBtn");
                         const injectedBtnSvg = document.getElementById("customizerBtnSvg");
                         if (injectedBtn && injectedBtnSvg) {
-                        injectedBtn.style.borderColor = normalBtnColor;
-                        injectedBtnSvg.style.fill = normalBtnColor;
-                        } else {
-                        console.error("Injected button not found.");
+                            injectedBtn.style.borderColor = normalBtnColor;
+                            injectedBtnSvg.style.fill = normalBtnColor;
                         }
-                    })
-                    .catch(error => console.error('Error loading HTML:', error));
+                    }
+                }
+            }
             injectionPending = false;
-        }else{injectionPending = false;}
-    });
+        })
+        .catch(error => {
+            console.error('Error loading button:', error);
+            injectionPending = false;
+        });
 };
-// injectButton()
-
-waitForElement(
-    "#character-tools-target > div > div.ct-character-sheet__inner > div > div.ct-character-header-desktop > div.ct-character-header-desktop__group.ct-character-header-desktop__group--custom",
-    (extBtn) => {
-    //   console.log("btn found");
-      extBtn.addEventListener("click", (event) => {
-        // event.stopImmediatePropagation();
-        // chrome.runtime.sendMessage({ action: "injectFileSelector" });
-        injectFileSelector()
-      }, true);
-    }
-);
 
 // Extract character ID from URL
 const getCharacterID = () => {
     const match = window.location.href.match(/\/characters\/(\d+)/);
     return match ? match[1] : null;
 };
+window.getCharacterID = getCharacterID;
 
 function getFromStorage(key){
-  // Works with either `browser` or `chrome`
   if (typeof browser !== "undefined") return browser.storage.local.get(key);
   return new Promise((resolve, reject) => {
     try { chrome.storage.local.get(key, resolve); }
@@ -99,151 +97,222 @@ function getFromStorage(key){
 
 // ----- Apply Functions -----
 
-// Function to apply backdrop
 function applyBackdrop() {
     const characterID = getCharacterID();
-    if (!characterID) {
-        // console.log("No character ID found. Skipping backdrop replacement.");
-        return;
-    }
+    if (!characterID) return;
 
-      getFromStorage(`backdrop_${characterID}`).then((data) => {
+    getFromStorage(`backdrop_${characterID}`).then((data) => {
         const backdropData = data[`backdrop_${characterID}`];
+        if (!backdropData) return;
 
-        if (!backdropData) {
-            // console.log(`No custom backdrop found for character ${characterID}.`);
-            return;
-        }
-
-        // console.log(`Found backdrop for character ${characterID}`);
-
-        // Directly apply the backdrop to the body tag (fastest method)
         let bodyElement = document.querySelector("body.body-rpgcharacter-sheet");
         if (bodyElement) {
             bodyElement.style.setProperty("background-image", `url(${backdropData})`, "important");
             bodyElement.style.setProperty("background-size", "cover", "important");
             bodyElement.style.setProperty("background-position", "center center", "important");
             bodyElement.style.setProperty("background-repeat", "no-repeat", "important");
+            bodyElement.style.setProperty("background-attachment", "fixed", "important");
         }
-
-    }).catch(error => {
-        console.error("Error loading backdrop:", error);
     });
 };
 
 function applyFrame(){
    const characterID = getCharacterID();
-   if (!characterID) {
-      return;
-   } // skip if character doesn't exist
-      getFromStorage(`frame_${characterID}`).then((data) => {
+   if (!characterID) return;
+
+   getFromStorage(`frame_${characterID}`).then((data) => {
       const frameData = data[`frame_${characterID}`];
+      if (!frameData) return;
 
-      if (!frameData) {
-         return;
-      } // skip if no current frame
-
-      const frameEl = document.querySelector(".ddbc-character-avatar__frame");
-      if (frameEl) {
-         frameEl.style.setProperty("background-image", `url(${frameData})`, "important");
-         // console.log("frame applied to body!");
-      } else{
-         console.log("frame failed");
+      const avatarContainer = document.querySelector(".ddbc-character-avatar");
+      if (avatarContainer) {
+         let overlay = avatarContainer.querySelector(".custom-frame-overlay");
+         if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.className = "custom-frame-overlay";
+            avatarContainer.appendChild(overlay);
+         }
+         overlay.style.backgroundImage = `url(${frameData})`;
+         
+         const originalFrame = avatarContainer.querySelector(".ddbc-character-avatar__frame");
+         if (originalFrame) originalFrame.style.opacity = "0";
+         
+         // Re-apply shape to overlay
+         storage.get(`portraitShape_${characterID}`).then(sData => {
+            if (sData[`portraitShape_${characterID}`]) applyPortraitShape(sData[`portraitShape_${characterID}`]);
+         });
       }
-
-   }).catch(error => {
-      console.error("Error loading frame:", error);
-   });  
-
+   });
 }
 
-// Apply Box Background Color
-function applyBackgroundColor(newColor, num) {
-    // Select all ddbc-box-background containers
-    const boxes = document.querySelectorAll('.ddbc-box-background, .InspirationBoxSvg-Sheet_Desktop_Static');
-    boxes.forEach(box => {
-        // Get all child elements and filter for <path> or <polygon>
-        const allChildren = Array.from(box.querySelectorAll("path, polygon"));
-        const firstElement = allChildren[0];
+function applyPortraitShape(shape = 'circle') {
+    const avatar = document.querySelector(".ddbc-character-avatar__portrait");
+    const container = document.querySelector(".ddbc-character-avatar");
+    const overlay = document.querySelector(".custom-frame-overlay");
+    
+    if (!avatar) return;
 
-        // Check if any valid candidate is found
-        firstElement.setAttribute("fill", newColor);
+    let clip = 'none';
+    let radius = '0';
 
-        if (allChildren.length == 3) {
-            const secondElement = allChildren[1];
-            secondElement.setAttribute("fill", newColor);
-            return;
+    switch(shape) {
+        case 'square':
+            clip = 'inset(0% 0% 0% 0%)';
+            radius = '0';
+            break;
+        case 'rounded':
+            clip = 'inset(0% 0% 0% 0% round 15%)';
+            radius = '15%';
+            break;
+        case 'diamond':
+            clip = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+            radius = '0';
+            break;
+        case 'hexagon':
+            clip = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
+            radius = '0';
+            break;
+        case 'circle':
+        default:
+            clip = 'circle(50% at 50% 50%)';
+            radius = '50%';
+            break;
+    }
+
+    avatar.style.clipPath = clip;
+    avatar.style.borderRadius = radius;
+    avatar.style.webkitClipPath = clip;
+
+    if (overlay) {
+        overlay.style.clipPath = clip;
+        overlay.style.webkitClipPath = clip;
+    }
+}
+window.applyPortraitShape = applyPortraitShape;
+
+// ----- Custom Fonts -----
+function applyFont(fontName) {
+    let linkEl = document.getElementById('customizer-font-link');
+    if (!linkEl) {
+        linkEl = document.createElement('link');
+        linkEl.id = 'customizer-font-link';
+        linkEl.rel = 'stylesheet';
+        document.head.appendChild(linkEl);
+    }
+
+    let styleEl = document.getElementById('customizer-font-style');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'customizer-font-style';
+        document.head.appendChild(styleEl);
+    }
+
+    if (fontName === 'default' || !fontName) {
+        linkEl.href = '';
+        styleEl.innerHTML = '';
+        return;
+    }
+
+    // Load from Google Fonts
+    const fontUrl = fontName.replace(' ', '+');
+    linkEl.href = `https://fonts.googleapis.com/css2?family=${fontUrl}:wght@400;700&display=swap`;
+
+    // Apply aggressively to sheet
+    styleEl.innerHTML = `
+        .ct-character-sheet, 
+        .ct-character-sheet *,
+        .ddbc-tooltip,
+        .ct-sidebar__portal {
+            font-family: "${fontName}", serif !important;
         }
+    `;
+}
+window.applyFont = applyFont;
 
-        // console.log(`🎨 Changed color of first ${firstElement.tagName} to ${newColor}`);
+function injectPatterns() {
+    if (document.getElementById('customizer-patterns')) return;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.id = 'customizer-patterns';
+    svg.setAttribute("style", "position: absolute; width: 0; height: 0; overflow: hidden;");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = `
+        <defs>
+            <pattern id="pattern-parchment" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                <image href="${chrome.runtime.getURL('parchment.jpg')}" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                <rect width="1" height="1" fill="rgba(0,0,0,0.2)" />
+            </pattern>
+            <pattern id="pattern-stone" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width="1" height="1">
+                <image href="${chrome.runtime.getURL('stone.png')}" width="1" height="1" preserveAspectRatio="xMidYMid slice" />
+                <rect width="1" height="1" fill="rgba(0,0,0,0.6)" />
+            </pattern>
+        </defs>
+    `;
+    document.body.appendChild(svg);
+}
+
+function applyBackgroundColor(newColor) {
+    const characterID = getCharacterID();
+    const color = newColor.slice(0, 7);
+    document.documentElement.style.setProperty("--box-bg-color", newColor);
+    injectPatterns();
+
+    storage.get(`boxStyle_${characterID}`).then(data => {
+        const style = data[`boxStyle_${characterID}`] || 'solid';
+        const boxes = document.querySelectorAll('.ddbc-box-background, .InspirationBoxSvg-Sheet_Desktop_Static');
+        
+        boxes.forEach(box => {
+            const allChildren = Array.from(box.querySelectorAll("path, polygon"));
+            const parent = box.parentElement;
+            
+            // RESET
+            parent.style.backdropFilter = 'none';
+            parent.style.webkitBackdropFilter = 'none';
+            parent.style.backgroundImage = 'none';
+            parent.style.backgroundSize = 'cover';
+            if (allChildren[0]) allChildren[0].setAttribute("fill", newColor);
+
+            if (style === 'frosted') {
+                parent.style.backdropFilter = 'blur(12px) brightness(1.1) contrast(1.1)';
+                parent.style.webkitBackdropFilter = 'blur(12px) brightness(1.1) contrast(1.1)';
+                if (allChildren[0]) allChildren[0].setAttribute("fill", newColor.slice(0, 7) + '44');
+            } else if (style === 'parchment') {
+                if (allChildren[0]) {
+                    allChildren[0].setAttribute("fill", 'url(#pattern-parchment)');
+                } else {
+                    parent.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${chrome.runtime.getURL('parchment.jpg')})`;
+                }
+            } else if (style === 'stone') {
+                if (allChildren[0]) {
+                    allChildren[0].setAttribute("fill", 'url(#pattern-stone)');
+                } else {
+                    parent.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${chrome.runtime.getURL('stone.png')})`;
+                }
+            }
+
+            if (allChildren.length === 3 && allChildren[1]) {
+                allChildren[1].setAttribute("fill", newColor);
+            }
+        });
     });
 
-    // Change the background color of the input fields
     document.querySelectorAll(".styles_input__coHiS").forEach(el => {
-        el.style.setProperty("background-color", newColor.slice(0, -2), "important");
+        el.style.setProperty("background-color", color, "important");
     });
     
-    const sideBackground = document.querySelectorAll('.bg');
-    if(sideBackground){
-        sideBackground.forEach(el => {
-            el.setAttribute("style", "fill:" + newColor.slice(0, -2) + " !important;");
-        });
-    }
-    
-    const dbSidebarBg = document.querySelectorAll('.styles_content__3knKz.styles_dark__6-qrS, .styles_gap__kuwYv.styles_dark__6-qrS')
-    if(dbSidebarBg){
-        dbSidebarBg.forEach(el => {
-            el.setAttribute("style", "background:" + newColor.slice(0, -2) + " !important;");
-        });
-    }
-    
-    const dbSidebarBorderBg = document.querySelectorAll('.styles_border__jHreB.styles_dark__6-qrS [class*=borderBg]')
-    if(dbSidebarBorderBg){
-        dbSidebarBorderBg.forEach(el => {
-            el.setAttribute("style", "fill:" + newColor.slice(0, -2) + " !important;");
-        });
-    }
-    
-    const dbSidebarCenterBg = document.querySelectorAll('.styles_intro__DxeXR')
-    if(dbSidebarCenterBg){
-        dbSidebarCenterBg.forEach(el => {
-            el.setAttribute("style", "background:" + newColor.slice(0, -2) + " !important;");
-        });
-    }
-    
-    const dbSidebarCenterBg2 = document.querySelector('.ct-decorate-pane__current-selections')
-        if(dbSidebarCenterBg2){
-            dbSidebarCenterBg2.setAttribute("style", "background:" + newColor.slice(0, -2) + " !important;")
-        }
-    
-    const dbSidebarUndregroundSwitch = document.querySelectorAll('.ct-decorate-pane__preferences-content')
-        if(dbSidebarUndregroundSwitch){
-        dbSidebarUndregroundSwitch.forEach(el => {
-            el.setAttribute("style", "background:" + newColor.slice(0, -2) + " !important;");
-        });
-    }
+    document.querySelectorAll('.bg').forEach(el => {
+        el.setAttribute("style", "fill:" + color + " !important;");
+    });
 }
 window.applyBackgroundColor = applyBackgroundColor;
 
 function applyHeaderColor(newColor) {
-  const color = newColor.slice(0, -2); // keep your pattern
-
-  // 1) Keep (or drop) this if you DO want the inner button bar colored:
+  const color = newColor.slice(0, 7);
   const headerBoxes = document.querySelectorAll('.ct-character-header-desktop');
   headerBoxes.forEach(el => {
-    el.setAttribute("style", "background:" + color + " !important;");
+    el.setAttribute("style", "background:" + newColor + " !important; margin-top: 0 !important;");
     el.style.backdropFilter = 'none';
-    el.style.webkitBackdropFilter = 'none';
   });
 
-  // 2) IMPORTANT: Do NOT paint the .ct-character-sheet element background.
-  //    Also clear any previous override that might have colored the whole page.
-  document.querySelectorAll('.ct-character-sheet').forEach(el => {
-    el.style.setProperty('background', 'transparent', 'important');
-    el.style.removeProperty('background-image'); // in case we set it before
-  });
-
-  // 3) Recolor ONLY the overlay pseudo-elements
   let style = document.getElementById('ddbHeaderOverlayStyle');
   if (!style) {
     style = document.createElement('style');
@@ -251,1265 +320,1131 @@ function applyHeaderColor(newColor) {
     document.head.appendChild(style);
   }
    style.textContent = `
+    .ct-character-sheet {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+    .ct-character-sheet__inner {
+      padding-top: 0 !important;
+    }
     .ct-character-sheet::before,
     .ct-character-sheet--dark-mode::before,
     .ct-character-header-desktop::before {
       content: "" !important;
-      background: ${color} !important;
+      background: ${newColor} !important;
       background-image: none !important;
       opacity: 1 !important;
       mix-blend-mode: normal !important;
-      box-shadow: none !important;
-    }
-    .ct-character-header-desktop::after {
-      background: transparent !important;
-      background-image: none !important;
-      opacity: 0 !important;
-      box-shadow: none !important;
     }
   `;
 }
-
 window.applyHeaderColor = applyHeaderColor;
 
-
-// Apply Box Border Color
-function applyBorderColor(newColor, num) {
-    // Reduced alpha color
-    let alpha = parseInt(newColor.slice(-2), 16);
-    alpha = Math.floor(alpha / 2);
-    let reducedColor = newColor.slice(0, -2) + alpha.toString(16).padStart(2, '0')
-
-    // Select all ddbc-box-background containers
-    const boxes = document.querySelectorAll('.ct-attunement__group-items, .ddbc-box-background, .InspirationBoxSvg-Sheet_Desktop_Static');
+function applyBorderColor(newColor) {
+    const color = newColor.slice(0, 7);
+    const boxes = document.querySelectorAll('.ct-attunement__group-items, .ddbc-box-background, .InspirationBoxSvg-Sheet_Desktop_Static, .ct-box-background');
     boxes.forEach(box => {
-        // Get all child elements and filter for <path> or <polygon>
         const allChildren = Array.from(box.querySelectorAll("path, polygon"));
         const element = allChildren[allChildren.length - 1];        
-        
-        element.setAttribute("fill", allChildren.length == 1 ? reducedColor : newColor);
-
-        // console.log(`🎨 Changed color of ${Element.tagName} to ${newColor}`);
+        if (element) element.setAttribute("fill", newColor);
     });
 
-    const sidebarBorders = document.querySelectorAll(".content")
-    if(sidebarBorders){
-        for(const bord of sidebarBorders){
-            bord.style.borderTop = "2px solid " + newColor;
-            bord.style.borderBottom = "2px solid " + newColor;
-        }
-    };
-    
-    const sideBorder = document.querySelectorAll('.bo');
-    if(sideBorder){
-        sideBorder.forEach(el => {
-            el.setAttribute("style", "fill:" + newColor + " !important;");
-        });
-    }else{
-        // console.log('No side border found');
+    // Global CSS Overrides for complex components
+    let styleEl = document.getElementById('customizer-border-overrides');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'customizer-border-overrides';
+        document.head.appendChild(styleEl);
     }
+
+    styleEl.innerHTML = `
+        /* Proficiency & Expertise Circles/Icons */
+        .ddbc-proficiency-svg circle,
+        .ddbc-proficiency-svg path,
+        [id*="ProficiencySvg"] circle,
+        [id*="ProficiencySvg"] path,
+        [id*="ProficiencyDoubleSvg"] circle,
+        [id*="ProficiencyDoubleSvg"] path,
+        .ct-proficiency-groups__group-item-indicator, 
+        .ddbc-proficiency-indicator {
+            fill: ${color} !important;
+            background-color: ${color} !important;
+            border-color: ${color} !important;
+        }
+
+        /* Heroic Inspiration / Sun Icons */
+        .ddbc-inspiration-token-svg path,
+        .ct-inspiration__icon svg path,
+        .ct-heroic-inspiration__icon svg path {
+            fill: ${color} !important;
+        }
+
+        /* Top Menu Buttons (Short Rest, Long Rest, etc) */
+        .ct-character-header-desktop__button {
+            border-color: ${color} !important;
+        }
+        .ct-character-header-desktop__button svg path {
+            fill: ${color} !important;
+        }
+
+        /* Modifier Box Borders (Skills, Saves, Abilities) */
+        .ct-skills__col--modifier,
+        .ct-saving-throws__col--modifier,
+        .ct-ability-summary__primary,
+        .ct-ability-summary__secondary,
+        .ct-health-summary__hp-item {
+            border-color: ${color} !important;
+        }
+
+        /* Links and themed buttons */
+        .ddbc-link,
+        .ddbc-theme-link,
+        .ct-actions__manage-custom-link,
+        .ct-theme-button--outline {
+            color: ${color} !important;
+            border-color: ${color} !important;
+        }
+
+        .ct-theme-button--is-enabled {
+            background-color: ${color} !important;
+            border-color: ${color} !important;
+        }
+
+        /* Filled Theme Buttons (Cast, Attack, etc) */
+        .ct-theme-button--filled {
+            background-color: ${color} !important;
+            border-color: ${color} !important;
+            color: white !important;
+        }
+
+        .ct-theme-button--filled:hover {
+            filter: brightness(1.2);
+        }
+
+        /* Tab / Group Headers */
+        .ct-content-group__header,
+        .ct-sidebar__header,
+        .ct-creature-pane__header {
+            border-bottom-color: ${color} !important;
+            color: ${color} !important;
+        }
+
+        .ct-content-group__header-content {
+            color: ${color} !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Integrated Dice Containers */
+        .integrated-dice__container {
+            border-color: ${color} !important;
+            box-shadow: inset 0 0 5px ${color}33 !important;
+        }
+
+        /* Modifier Sign Color (+/-) */
+        .styles_labelSignColor__Klmbs,
+        .styles_sign__NdR6X {
+            color: ${color} !important;
+        }
+
+        /* Global themed paths */
+        .ddbc-svg--themed path {
+            fill: ${color} !important;
+        }
+    `;
+
+    document.querySelectorAll(".content").forEach(bord => {
+        bord.style.borderTop = "2px solid " + newColor;
+        bord.style.borderBottom = "2px solid " + newColor;
+    });
+    
+    document.querySelectorAll('.bo').forEach(el => {
+        el.setAttribute("style", "fill:" + newColor + " !important;");
+    });
+
+    document.documentElement.style.setProperty("--theme-color", newColor);
 }
 window.applyBorderColor = applyBorderColor;
 
-// Apply Accent Color
-function applyAccentColor(newColor, num) {
+function applyAccentColor(newColor) {
     document.documentElement.style.setProperty("--theme-color", newColor);
-
-    const partyTime = document.querySelector('#rainbowModeBtn')
-    if(partyTime){
-        if(partyTime.value === '0'){
-            partyTime.style.backgroundColor = newColor
-        }
-    }
     
-    const elements = document.querySelectorAll('.ct-character-header-desktop__button');
-    elements.forEach(element => {
-        if (element) {
-          element.style.borderColor = newColor
-        }
+    document.querySelectorAll('.ct-character-header-desktop__button').forEach(element => {
+        element.style.borderColor = newColor;
     });
 
-    const sliders = document.querySelectorAll('#alphaInputBg, #alphaInputBo')
-    sliders.forEach(element => {
-        if (element) {
-            element.setAttribute("style", "accent-color: " + newColor + " !important;")
-        }
-    });
-    
-    const dbSidebarButtonsBorder = document.querySelectorAll('.ddbc-collapsible--opened > .ddbc-collapsible__header')
-        if(dbSidebarButtonsBorder){
-        dbSidebarButtonsBorder.forEach(el => {
-            el.setAttribute("style", "border-color:" + newColor + " !important;");
-        });
-    };
-    
-    const savingThrowsborders = document.querySelectorAll('.ddbc-saving-throw-selection-box-svg path')
-        if(savingThrowsborders){
-        savingThrowsborders.forEach(el => {
-            el.style.stroke = newColor;
-        });
-    };
-
-    const invAction = document.querySelectorAll('.ct-inventory__action')
-    invAction.forEach(element => {
-        if (element) {
-            element.setAttribute("style", "color: " + newColor + " !important;")
-        }
-    });
-    
-    const diceContainerBord = document.querySelectorAll('.integrated-dice__container')
-        if(diceContainerBord){
-            diceContainerBord.forEach(el => {                  
-            el.setAttribute("style", "border-color:" + newColor + " !important;");
-            // const style = document.createElement('style');
-            // style.textContent = `
-            // button.integrated-dice__container:hover {
-            //     background-color: ${newColor.slice(0, -2) + "44"} !important;
-            // }
-            // `;
-            // document.head.appendChild(style);
-        });
-    };
-
-    const diceContainerHover = ".integrated-dice__container:hover:not(:has(+ .ddbc-saving-throw-selection-box-svg))";
-    const diceContainerHoverSVG = ".integrated-dice__container:hover ~ .ddbc-saving-throw-selection-box-svg";
-    let hoverStyleEl = document.getElementById("diceContainerHoverStyle");
-    if (!hoverStyleEl) {
-        hoverStyleEl = document.createElement("style");
-        hoverStyleEl.id = "diceContainerHoverStyle";
-        document.head.appendChild(hoverStyleEl);
+    const diceToolbar = document.querySelector('.dice-toolbar');
+    if(diceToolbar){
+        diceToolbar.style.setProperty('--dice-color', newColor, 'important');
     }
 
-    hoverStyleEl.innerHTML = `
-        ${diceContainerHover} {
-            background-color: ${newColor.slice(0,-2)}33 !important;
+    // Global Readability Overrides
+    let styleEl = document.getElementById('customizer-readability-overrides');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'customizer-readability-overrides';
+        document.head.appendChild(styleEl);
+    }
+
+    styleEl.innerHTML = `
+        /* GLOBAL READABILITY - Apply shadow to all text on the sheet */
+        .ct-character-sheet,
+        .ct-character-sheet *,
+        .ct-sidebar__portal,
+        .ct-sidebar__portal * {
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.9), 0px 0px 2px rgba(0,0,0,0.5) !important;
         }
-        ${diceContainerHoverSVG} {
-            fill: ${newColor.slice(0,-2)}33 !important;
+
+        /* 1. Tinted & Bold - High-level Navigation & Important Labels */
+        .styles_tabButton__wvSLf,
+        .styles_weightSecondaryText__ezwvR,
+        .ct-character-sheet .ct-item-detail__header-secondary,
+        .ct-character-sheet .ddbc-item-name__rarity {
+            color: color-mix(in srgb, ${newColor}, white 70%) !important;
+            font-weight: 600 !important;
+        }
+
+        /* Active tab should be bright white */
+        .styles_tabButton__wvSLf[aria-checked="true"] {
+            color: white !important;
+            border-bottom-color: ${newColor} !important;
+        }
+
+        /* Update global gray variables for both light and dark modes */
+        .ct-character-sheet,
+        .ct-character-sheet--dark-mode {
+            --text-color-0: color-mix(in srgb, ${newColor}, white 70%) !important;
+        }
+
+        /* Modifier Signs (+ / -) High Visibility */
+        .styles_sign__NdR6X,
+        .styles_labelSignColor__Klmbs,
+        .ddbc-signed-number__sign,
+        .ct-signed-number__sign {
+            font-weight: 800 !important;
+            color: white !important;
+            text-shadow: 0px 0px 3px black, 1px 1px 2px black !important;
         }
     `;
-    
-    const diceToolbar = document.querySelector('.dice-toolbar')
-    if(diceToolbar){
-        
-        const darkColor = newColor.replace(/^#/, '').replace(/../g, c => ('0' + Math.max(0, parseInt(c, 16) - 30).toString(16)).slice(-2));
-        const darkColorRgb = `rgb(${parseInt(darkColor.slice(0, 2), 16)}, ${parseInt(darkColor.slice(2, 4), 16)}, ${parseInt(darkColor.slice(4, 6), 16)})`;
-        // const shadow = boxShadow.replace(/rgb\(\d+, \d+, \d+\)/g, darkColorRgb);
-                       
-        diceToolbar.style.setProperty('--dice-color', newColor, 'important');
-        diceToolbar.style.setProperty('--dice-color-hover', darkColorRgb, 'important');
-    };
-    
-    const dbSidebarImgBorder = document.querySelectorAll('.ddbc-character-avatar__portrait')
-        if(dbSidebarImgBorder){
-        dbSidebarImgBorder.forEach(el => {
-            el.setAttribute("style", "border-color:" + newColor + " !important;");
-        });
-    };
-    
-    const dbSidebarCenterBorder = document.querySelectorAll('.ct-decorate-pane__current-selections')
-        if(dbSidebarCenterBorder){
-        dbSidebarCenterBorder.forEach(el => {
-            el.setAttribute("style", "border-bottom: 1px solid " + newColor + " !important;");
-        });
-    };
-    const dbSidebarCollBorder = document.querySelectorAll('.ct-decorate-pane__preferences')
-        if(dbSidebarCollBorder){
-        dbSidebarCollBorder.forEach(el => {
-            el.setAttribute("style", "border-bottom: 1px solid " + newColor + " !important;");
-        });
-    };
-    
-    const dbSidebarCollBorderTop = document.querySelectorAll('.ct-decorate-pane__preferences-content')
-        if(dbSidebarCollBorderTop){
-        dbSidebarCollBorderTop.forEach(el => {
-            el.setAttribute("style", "border-top: 1px solid " + newColor + " !important;");
-        });
-    };
-    
-    const cosiCheAVolteNonCambiano = document.querySelectorAll('.site .ddbc-theme-link')
-        if(cosiCheAVolteNonCambiano){
-            cosiCheAVolteNonCambiano.forEach(el => {
-            el.setAttribute("style", "color: " + newColor + " !important;");
-        });
-    };
-
-    const attackBorders = document.querySelectorAll('.ddbc-combat-attack, .ct-description__traits')
-        if(attackBorders){
-            attackBorders.forEach(el => {
-            el.setAttribute("style", "border-color: " + newColor.slice(0,-2)+"33 !important;");
-        });
-    };
-    
-    // Iterate over header buttons svg childrens
-    for (const child of document.querySelector('.ct-character-header-desktop').children) {
-        for (const grandchild of child.children) {
-            if (grandchild.getAttribute('role') === 'button') {
-                const svg = grandchild.querySelector('svg');
-                if (svg) {
-                    svg.querySelectorAll('*').forEach(svgChild => {
-                        if (svgChild.tagName === 'ellipse') {
-                            svgChild.style.stroke = newColor;
-                        } else {
-                            svgChild.style.fill = newColor;
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    document.querySelectorAll('circle').forEach(el => {
-        el.setAttribute("fill", newColor);
-        
-        const parentElement = el.parentElement;
-        if (parentElement.children.length > 0) {
-            // console.log("ci provo")
-            parentElement.children[0].setAttribute("fill", newColor);
-        }
-    });
-    document.querySelectorAll('.styles_extra__BgeMp').forEach(el => {
-        el.setAttribute("style", "border-color:" + newColor + " !important;");
-    });
-    document.querySelectorAll("#site-bar > div").forEach(el => {
-        el.setAttribute("style", "border-color:" + newColor + " !important;");
-    });
-    document.querySelectorAll('.ct-class-detail__name').forEach(el => {
-        el.setAttribute("style", "color:" + newColor + " !important;");
-    });
-
-    const sidebarBey = document.querySelector("#site > div.ct-sidebar__portal > div:nth-child(2) > div > div > div > div.styles_pane__AOt0h > div.styles_content__3knKz.styles_dark__6-qrS.styles_fullWidth__SRmoS > div > div")
-    if(sidebarBey){
-        sidebarBey.querySelectorAll('svg').forEach(el => {
-            el.setAttribute("style", "fill: "+newColor);
-            el.querySelectorAll('*').forEach(child => {
-                child.setAttribute('fill', newColor);
-            });
-        });
-    };
-
-    const skills = document.querySelectorAll('[role="cell"]');
-    for (const skill of skills) {
-        const rgbaMatch = skill.style.getPropertyValue('border-color').match(/rgba\(\d+, \d+, \d+, (\d+(\.\d+)?)\)/);
-        if (rgbaMatch) {
-            const alpha = Math.floor(parseFloat(rgbaMatch[1]) * 255).toString(16).padStart(2, '0');
-            const newColorAlpha = newColor.slice(0, -2) + alpha;
-            skill.style.setProperty('border-color',newColorAlpha);
-        } 
-    };
-
-    const profs = document.querySelectorAll('.ct-combat__statuses-group, .ct-proficiency-groups__group, .styles_attack__6-4vH.ddbc-combat-action-attack-weapon.ddbc-combat-attack');
-    for (const prof of profs) {
-        const rgbaMatch = prof.style.getPropertyValue('border-color').match(/rgba\(\d+, \d+, \d+, (\d+(\.\d+)?)\)/);
-        if (rgbaMatch) {
-            const alpha = Math.floor(parseFloat(rgbaMatch[1]) * 255).toString(16).padStart(2, '0');
-            const newColorAlpha = newColor.slice(0, -2) + alpha;
-            prof.style.setProperty('border-color', newColorAlpha);
-        }
-    };
-
-    const styleSheet = document.querySelector("html > style").sheet;
-    if (styleSheet) {
-        // console.log(styleSheet.cssRules.length);
-        for (let i = 0; i < styleSheet.cssRules.length; i++) {
-            const rule = styleSheet.cssRules[i];
-            // console.log(rule, rule.cssText);
-            if ((rule instanceof CSSStyleRule)) {
-                if (rule) {
-                    const style = rule.style;
-                    for (let j = 0; j < style.length; j++) {
-                        const property = style[j];
-                        if (
-                            ( (rule.cssText.includes('.ct-theme-button--outline.ct-button')) &&
-                              !(property == 'background-color') &&
-                              !(property == 'color')
-                            )
-                                    ||
-                            ( (rule.cssText.includes('.ct-theme-button--outline.ct-button')) &&
-                              (rule.cssText.includes(':hover')) &&
-                              !(property == 'color')
-                            )
-                                    ||
-                            ( (rule.cssText.includes('ct-theme-button--filled')) &&
-                              !(rule.cssText.includes(':disabled')) &&
-                              !(property == 'color')
-                            )
-                                    ||
-                            ( (rule.cssText.includes('slot-manager__slot')) &&
-                              (rule.cssText.includes('--used')) &&
-                              !(property == 'background-color')
-                            )
-                                    ||
-                            ( (rule.cssText.includes('slot-manager__slot')) &&
-                              (rule.cssText.includes('--used')) &&
-                              (rule.cssText.includes(':before')) &&
-                              (property == 'background-color')
-                            )
-                                    ||
-                            ( (rule.cssText.includes('ct-content-group__header'))
-                            )
-                                    ||
-                            ( (rule.cssText.includes('line')) &&
-                              !(rule.cssText.includes('.ct-theme-button--outline.ct-button'))
-                            )
-                                    ||
-                            ( (rule.cssText.includes('theme-link')) &&
-                              !(rule.cssText.includes('.ct-theme-button--outline.ct-button'))
-                            )
-                        ) {
-                            if (style.getPropertyValue(property).includes('rgba')) {
-                                const rgbaMatch = style.getPropertyValue(property).match(/rgba\(\d+, \d+, \d+, (\d+(\.\d+)?)\)/);
-                                if (rgbaMatch) {
-                                    const alpha = Math.floor(parseFloat(rgbaMatch[1]) * 255).toString(16).padStart(2, '0');
-                                    const newColorAlpha = newColor.slice(0, -2) + alpha;
-                                    style.setProperty(property, newColorAlpha)
-                                } 
-                            } else if(property == 'box-shadow'){
-                                const boxShadow = style.getPropertyValue(property);
-                                const darkColor = newColor.replace(/^#/, '').replace(/../g, c => ('0' + Math.max(0, parseInt(c, 16) - 30).toString(16)).slice(-2));
-                                const darkColorRgb = `rgb(${parseInt(darkColor.slice(0, 2), 16)}, ${parseInt(darkColor.slice(2, 4), 16)}, ${parseInt(darkColor.slice(4, 6), 16)})`;
-                                const shadow = boxShadow.replace(/rgb\(\d+, \d+, \d+\)/g, darkColorRgb);
-                                style.setProperty(property, shadow)
-                            }
-                            else{style.setProperty(property, newColor);}                     
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    // console.log(`🎨 Changed Accent color to ${newColor}`);
 }
 window.applyAccentColor = applyAccentColor;
 
-// Apply Text Color
-const whiteClasses = [
-    "headerSidebar",
-    ".ct-item-slot-manager--empty",
-    ".ct-inventory-item__quantity",
-    ".ct-inventory-item__cost",
-    ".styles_pane__AOt0h .styles_content__3knKz",
-    ".styles_pane__AOt0h .ddbc-collapsible__heading",
-    ".styles_pane__AOt0h .styles_characterManagePane__cAzM6",
-    ".styles_pane__AOt0h .styles_classSummary__190Xx",
-    ".styles_pane__AOt0h .ddbc-character-progression-summary__level",
-    ".styles_pane__AOt0h .styles_characterName__vGRGp",
-    "ct-extra-row__hp-sep",
-    "ct-equipment-overview__weight-carried",
-    "ct-equipment-overview__weight-carried--dark-mode",
-    "styles_tabList__Q4CqK button[aria-checked=true]",
-    "ct-extra-row__ac",
-    "ct-extra-row__ac--dark-mode",
-    "ct-extra-row__hp-value--current",
-    "ct-extra-row__name",
-    "ct-extra-row__name--dark-mode",
-    "styles_item__8bGe2[role]>p",
-    "styles_headingDarkMode__YO4Ql",
-    "ct-feature-snippet__action-limited-label",
-    "ct-feature-snippet__action-summary",
-    "ct-feature-snippet__choice",
-    "ct-feature-snippet__action-limited-label--dark-mode",
-    "ct-feature-snippet__action-summary--dark-mode",
-    "ct-feature-snippet__choice--dark-mode",
-    "styles_common__4urYa",
-    "ct-equipment__container-name",
-    "ct-notes__note",
-    "ddbc-tooltip",
-    "ddbc-tooltip--dark-mode",
-    "tss-1r5d1qn-Notification",
-    "integrated-dice__container",
-    "ct-description",
-    "styles_tabFilter__50iSv",
-    "styles_content__QjnYw",
-    "ct-content-group",
-    "ct-content-group__content",
-    "ct-background",
-    "ct-background__name",
-    "ct-background__feature",
-    "ct-background__feature-name",
-    "ct-background__feature-description",
-    "ct-description__physical",
-    "styles_physical__2aytL",
-    "styles_item__8bGe2",
-    "InfoItem_label__+wkfa",
-    "InfoItem_value__rVPhW",
-    "ct-description__traits",
-    "ct-trait-content",
-    "ct-trait-content--no-content",
-    "ct-trait-content__heading",
-    "ct-trait-content__content",
-    "sync-blocker",
-    "sync-blocker-inactive",
-    "sync-blocker-group",
-    "sync-blocker-logo",
-    "ddbc-animated-loading-ring-svg",
-    "sync-blocker-anim",
-    "styles_numberDisplay__Rg1za",
-    "styles_signed__scf97",
-    "ct-proficiency-bonus-box__value",
-    "ct-proficiency-bonus-box__value--dark-mode",
-    "styles_large__3C8uq",
-    "styles_largeDistance__YVw96",
-    "styles_label__Bj6YW",
-    "styles_dark__+NBMD",
-    "styles_label__Ivf2i",
-    "styles_input__coHiS",
-    "styles_number__j1d93",
-    "styles_maxContainer__mt+Ff",
-    "ddbc-saving-throws-summary__ability-name",
-    "ddbc-saving-throws-summary__ability-name--dark-mode",
-    "ddbc-manage-icon",
-    "ddbc-manage-icon--edge-icon",
-    "ddbc-manage-icon--interactive",
-    "ddbc-manage-icon--dark-mode",
-    "ddbc-tooltip--is-interactive",
-    "ddbc-manage-icon__content",
-    "ddbc-manage-icon__icon",
-    "ddbc-manage-icon__icon--dark-mode",
-    "ct-senses__callout-value",
-    "ct-senses__callout-value--dark-mode",
-    "ct-senses__callout-label",
-    "ct-senses__callout-label--dark-mode",
-    "ct-senses__summary",
-    "ct-senses__summary--dark-mode",
-    "ct-proficiency-groups__group-items",
-    "ct-proficiency-groups__group-items--dark-mode",
-    "ct-proficiency-groups__group-item",
-    "ct-proficiency-groups__group-item--dark-mode",
-    "ct-skills__col--skill",
-    "ct-skills__col--skill--dark-mode",
-    "styles_label__6xv1b",
-    "styles_dark__Vo9m3",
-    "ddbc-armor-class-box__value",
-    "ddbc-armor-class-box__value--dark-mode",
-    "ct-defenses-summary__defense",
-    "ct-defenses-summary__defense--dark-mode",
-    "ddbc-condition__name",
-    "ddbc-condition__name--dark-mode",
-    "styles_col__3hY1K",
-    "styles_darkMode__jYXhg",
-    "styles_icon__1IA7a",
-    "styles_name__MDLaF",
-    "styles_range__Wxk2r",
-    "styles_tohit__zsX78",
-    "styles_damage__2d1fl",
-    "styles_notes__mSXl3",
-    "ddbc-combat-attack__label",
-    "ddbc-combat-attack__label--dark-mode",
-    "ddbc-combat-attack__range-value",
-    "ddbc-combat-attack__range-value--dark-mode",
-    "ddbc-combat-attack__range-value-close",
-    "ddbc-combat-attack__range-value-close--dark-mode",
-    "ddbc-damage",
-    "ddbc-damage--dark-mode",
-    "ddbc-damage__value",
-    "ddbc-damage__value--dark-mode",
-    "ddbc-damage__icon",
-    "ddbc-damage-type-icon",
-    "ddbc-damage-type-icon--piercing",
-    "ddbc-damage-type-icon__img",
-    "ddbc-damage-type-icon__img--piercing",
-    "ddbc-damage-type-icon--radiant",
-    "ddbc-damage-type-icon__img--radiant",
-    "ddbc-damage-type-icon--force",
-    "ddbc-damage-type-icon__img--force",
-    "ddbc-damage-type-icon--thunder",
-    "ddbc-damage-type-icon__img--thunder",
-    "styles_spellName__wX3ll",
-    "ddbc-combat-attack__spell-range",
-    "ddbc-combat-attack__spell-range-value",
-    "ddbc-damage-type-icon--fire",
-    "ddbc-damage-type-icon__img--fire",
-    "ddbc-damage-type-icon--acid",
-    "ddbc-damage-type-icon__img--acid",
-    "ddbc-combat-attack__save-value",
-    "ddbc-combat-attack__save-value--dark-mode",
-    "styles_sectionHeading__f715p",
-    "ct-basic-actions",
-    "ct-basic-actions--dark-mode",
-    "ct-basic-actions__action",
-    "ct-basic-actions__action-sep",
-    "ct-feature-snippet__heading",
-    "ct-feature-snippet__heading--dark-mode",
-    "ddbc-snippet",
-    "ddbc-snippet--parsed",
-    "ddbc-snippet--dark-mode",
-    "jsx-parser",
-    "ddbc-snippet__content",
-    "ddbc-snippet__tag",
-    "ddbc-combat-attack__spell-range-origin",
-    "ddbc-combat-attack__spell-range-origin--dark-mode",
-    "ddbc-damage-type-icon--lightning",
-    "ddbc-damage-type-icon__img--lightning",
-    "ddbc-action-name",
-    "styles_concentrationIcon__BsaNr",
-    "styles_icon__Heo9G",
-    "styles_svg__Jr+M-",
-    "Tooltip_container__20y9m",
-    "ct-feature-snippet__limited-use",
-    "ct-feature-snippet__limited-use--dark-mode",
-    "ct-feature-snippet__limited-use-usages",
-    "ct-feature-snippet__limited-use-reset",
-    "ct-slot-manager",
-    "ct-slot-manager--size-small",
-    "ct-slot-manager__slot",
-    "ct-slot-manager__slot--interactive",
-    "ddbc-combat-attack__empty",
-    "ddbc-action-name__customized",
-    "ct-feature-snippet__heading-activation",
-    "ct-feature-snippet__heading-activation--dark-mode",
-    "ddb-footer__link",
-    "styles_arrows__182cG",
-    "styles_solid__2ijrG",
-    "styles_dark__O1vGK",
-    "styles_fullWidth__dRMhB",
-    "styles_mobile__6xVb4",
-    "css-79xub",
-    "MuiBox-root",
-    "css-dgzhqv",
-    "MuiTypography-body1",
-    "dice-toolbar__target-user",
-    "css-9l3uo3",
-    "dice-toolbar__target-roll",
-    "css-k58djc",
-    "MuiSvgIcon-root",
-    "MuiSvgIcon-fontSizeMedium",
-    "css-vubbuv"
-];
-const grayClasses = [
-    '.ct-defenses-summary__default',
-    '.ct-conditions-summary__default',
-    '.ct-button__content',
-    ".ddbc-attunement-slot__meta",
-    "ct-spell-detail__components-description",
-    ".styles_pane__AOt0h .ct-item-detail__spell-damage-group-data-origin",
-    ".styles_pane__AOt0h .ct-item-detail__spell-damage-group-restriction",
-    ".ct-spells-spell__empty-value",
-    "ct-spells-spell__notes",
-    "ct-attunement__meta",
-    "ct-attunement__group-header",
-    "ddbc-spell-damage-effect",
-    "ddbc-spell-damage-effect--dark-mode",
-    "ct-inventory-item__meta",
-    "ct-inventory-item__meta--dark-mode",
-    ".styles_pane__AOt0h .ddbc-character-summary",
-    String.raw`styles_classMeta__Pd\+W2`,
-    "styles_reference__4pmEk",
-    "ct-equipment__container-weight-capacity",
-    "ct-equipment-overview__weight-speed",
-    "ct-equipment__container-quantity",
-    "ct-character-sheet",
-    "ct-character-sheet--dark-mode",
-    "ct-spells-level-casting__info-label",
-    "ct-spells-spell__save-label",
-    "ct-actions__attacks-per-action",
-    "ct-actions__attacks-per-action--dark-mode",
-    ".styles_tabButton__wvSLf",
-    "ct-extra-row__hp-value--total",
-    "ct-extra-row__meta",
-    "ct-extra-row__meta--dark-mode",
-    "ct-extra-row__meta",
-    "ct-extra-row__meta--dark-mode",
-    "styles_legacy__hyrw1",
-    "styles_expanded__goxgO",
-    "styles_level__yuVR8",
-    "ddbc-combat-attack__save-label",
-    "ddbc-combat-attack__range-label",
-    "ddbc-combat-attack__meta",
-    "ddbc-combat-attack__meta--dark-mode",
-    "ddbc-combat-attack__range-value-long",
-    "ct-spells-filter__input[type=search]",
-    ".ct-spells-level__spells-row-header",
-    ".ct-spells-level__spells-row-header--dark-mode",
-    "ct-spells-spell__meta-item",
-    "ddbc-spell-damage-effect__tags",
-    "styles_labelSignColor__Klmbs",
-    "styles_label__L8mZK",
-    "ct-spells-spell__at-will",
-    "ddbc-note-components__component",
-    "ddbc-note-components__component--dark-mode",
-    "styles_buttons__hGhtB",
-    "ddbc-combat-attack__notes",
-    "ct-character-sheet",
-    "ct-character-sheet--dice-enabled",
-    "ct-character-sheet--dark-mode",
-    "ct-character-sheet__inner",
-    "ct-character-sheet-desktop",
-    "ct-quick-info",
-    "ct-quick-info__abilities",
-    "ct-quick-info__ability",
-    "ddbc-ability-summary",
-    "ddbc-box-background",
-    "ddbc-svg",
-    "ddbc-ability-score-box-svg",
-    "ddbc-ability-summary__heading",
-    "ddbc-ability-summary__label",
-    "ddbc-ability-summary__label--dark-mode",
-    "ddbc-ability-summary__abbr",
-    "ddbc-ability-summary__primary",
-    "ddbc-ability-summary__primary--dark-mode",
-    "ddbc-ability-summary__secondary",
-    "ddbc-ability-summary__secondary--dark-mode",
-    "ct-quick-info__box",
-    "ct-quick-info__box--proficiency",
-    "ct-proficiency-bonus-box",
-    "ct-proficiency-bonus-box__heading",
-    "ct-proficiency-bonus-box__heading--dark-mode",
-    "ct-proficiency-bonus-box__label",
-    "ct-proficiency-bonus-box__label--dark-mode",
-    "ct-quick-info__box--speed",
-    "ct-speed-box",
-    "ct-speed-box__heading",
-    "ct-speed-box__heading--dark-mode",
-    "ct-speed-box__box-value",
-    "ct-speed-box__box-value--dark-mode",
-    "ct-speed-box__label",
-    "ct-speed-box__label--dark-mode",
-    "ct-quick-info__inspiration",
-    "styles_box__6xvSR",
-    "styles_interactive__0wY9H",
-    "ddbc-inspiration-box-svg",
-    "styles_status__wfjbc",
-    "ct-quick-info__health",
-    "styles_hitPointsBox__iqcr7",
-    "styles_content__nPt0e",
-    "styles_container__1cATf",
-    "styles_container__nsTN6",
-    "styles_innerContainer__Xn2+o",
-    "styles_item__UVpsr",
-    "styles_label__ysVMP",
-    "styles_spacer__fglT0",
-    "styles_number__j1d93",
-    "styles_slash__UmBPf",
-    "accessibility_screenreaderOnly__OEzRB",
-    "styles_temp__pxAha",
-    "styles_valueButton__0rK5Z",
-    "styles_tempEmpty__fI4gV",
-    "ct-subsections",
-    "ct-subsection",
-    "ct-subsection--abilities",
-    "ct-saving-throws-box",
-    "ct-saving-throws-box__abilities",
-    "ddbc-saving-throws-summary",
-    "ddbc-saving-throws-summary__ability",
-    "ddbc-saving-throws-summary__ability--str",
-    "ddbc-saving-throw-row-box-svg",
-    "ddbc-svg--themed",
-    "ddbc-saving-throws-summary__ability-proficiency",
-    "ddbc-tooltip",
-    "ddbc-tooltip--dark-mode",
-    "ddbc-proficiency-svg",
-    "ddbc-proficiency-icon",
-    "ddbc-proficiency-level-icon",
-    "ddbc-saving-throws-summary__ability-modifier",
-    "ddbc-saving-throw-selection-box-svg",
-    "ddbc-saving-throws-summary__ability-modifier-background",
-    "ddbc-saving-throws-summary__ability--dex",
-    "ddbc-saving-throws-summary__ability--con",
-    "ddbc-saving-throws-summary__ability--int",
-    "ddbc-saving-throws-summary__ability--wis",
-    "ddbc-saving-throws-summary__ability--cha",
-    "ct-saving-throws-box__info",
-    "ct-saving-throws-box__modifiers",
-    "ct-saving-throws-box__modifiers--multi",
-    "ct-saving-throws-box__modifiers--dark-mode",
-    "ct-saving-throws-box__modifier",
-    "ct-dice-adjustment-summary",
-    "ct-dice-adjustment-summary__icon",
-    "ddbc-advantage-icon",
-    "ddbc-advantage-svg",
-    "ddbc-svg--positive",
-    "ct-dice-adjustment-summary__restriction",
-    "ct-dice-adjustment-summary__description",
-    "ct-dice-adjustment-summary__description--ability",
-    "ct-dice-adjustment-summary__description--ability--dark-mode",
-    "ddbc-bonus-positive-svg",
-    "ct-dice-adjustment-summary__value",
-    "ct-subsection__footer",
-    "ct-senses-desktop",
-    "ct-subsection--senses",
-    "ct-senses-box",
-    "ct-senses",
-    "ct-senses__callouts",
-    "ct-senses__callout",
-    "ddbc-sense-row-box-svg",
-    "ct-subsection--proficiency-groups",
-    "ct-proficiency-groups-box",
-    "ct-proficiency-groups",
-    "ct-proficiency-groups__group",
-    "ct-proficiency-groups__group-label",
-    "ct-proficiency-groups__group-label--dark-mode",
-    "ct-subsection--skills",
-    "ct-skills-box",
-    "ct-skills",
-    "ct-skills--dark-mode",
-    "ct-skills__header",
-    "ct-skills__col--proficiency",
-    "ct-skills__heading",
-    "ct-skills__heading--dark-mode",
-    "ct-skills__col--stat",
-    "ct-skills__col--modifier",
-    "ct-skills__list",
-    "ct-skills__item",
-    "ddbc-no-proficiency-icon",
-    "ddbc-no-proficiency-icon--dark-mode",
-    "ct-skills__col--stat--dark-mode",
-    "ct-skills__col--modifier--dark-mode",
-    "ddbc-twice-proficiency-icon",
-    "ddbc-twice-proficiency-icon--modified",
-    "ddbc-proficiency-half-svg",
-    "ddbc-twice-proficiency-icon__inner",
-    "ct-subsection--combat",
-    "ct-combat",
-    "ct-combat__summary",
-    "ct-combat__summary-group",
-    "ct-combat__summary-group--initiative",
-    "styles_box__PLQui",
-    "styles_value__hqDak",
-    "ddbc-initiative-box-svg",
-    "ct-combat__summary-group--ac",
-    "ddbc-armor-class-box",
-    "ddbc-armor-class-box-svg",
-    "ddbc-armor-class-box__label",
-    "ddbc-armor-class-box__label--dark-mode",
-    "ct-combat__summary-group--statuses",
-    "ct-combat__statuses",
-    "ct-combat__statuses-group",
-    "ct-combat__statuses-group--defenses",
-    "ct-combat__summary-label",
-    "ct-combat__summary-label--dark-mode",
-    "ct-defenses-summary",
-    "ct-defenses-summary__group",
-    "ct-defenses-summary__group-preview",
-    "ddbc-resistance-icon",
-    "ct-defenses-summary__group-items",
-    "ddbc-immunity-icon",
-    "ct-combat__statuses-group--conditions",
-    "ct-conditions-summary",
-    "ddbc-condition",
-    "ct-subsection--primary-box",
-    "ct-primary-box",
-    "ct-primary-box--dark-mode",
-    "styles_tabList__Q4CqK",
-    "styles_tabs__aTttL",
-    "styles_tabButton__wvSLf",
-    "ct-primary-box__tab--actions",
-    "ct-actions",
-    "styles_tabFilter__50iSv",
-    "styles_content__QjnYw",
-    "styles_actionsList__tw2cW",
-    "styles_attackTable__E+HtW",
-    "styles_tableHeader__Ow6Oy",
-    "ddbc-combat-attack--item",
-    "ddbc-combat-item-attack--ranged",
-    "styles_attack__6-4vH",
-    "ddbc-combat-attack",
-    "ddbc-combat-attack__icon",
-    "ddbc-combat-attack__icon-img--weapon-spell-damage",
-    "ddbc-attack-type-icon",
-    "ddbc-attack-type-icon--1-2",
-    "ddbc-attack-type-icon--weapon-spell",
-    "ddbc-combat-attack__name",
-    "ddbc-combat-attack__range",
-    "ddbc-combat-attack__action",
-    "ddbc-combat-attack__tohit",
-    "ddbc-combat-attack__damage",
-    "ddbc-combat-item-attack__damage",
-    "ddbc-combat-item-attack--melee",
-    "ddbc-attack-type-icon--1-1",
-    "ddbc-combat-attack--spell",
-    "ddbc-combat-attack__icon-img--spell-school-necromancy",
-    "ddbc-spell-school-icon",
-    "ddbc-spell-school-icon--necromancy",
-    "ddbc-combat-attack__icon-img--spell-school-evocation",
-    "ddbc-spell-school-icon--evocation",
-    "ddbc-combat-attack__icon-img--spell-school-transmutation",
-    "ddbc-spell-school-icon--transmutation",
-    "ddbc-combat-attack__save",
-    "styles_section__sO+fQ",
-    "styles_activatable__ismyq",
-    "ct-feature-snippet",
-    "ct-feature-snippet__content",
-    "ddbc-combat-action-attack-spell",
-    "ddbc-combat-attack__icon-img--action-attack-spell-ranged",
-    "ddbc-attack-type-icon--2-2",
-    "prefix__cls-1",
-    "prefix__cls-5",
-    "ct-feature-snippet__spells",
-    "ct-feature-snippet__spells--layout-compact",
-    "ct-feature-snippet__spells--dark-mode",
-    "ct-feature-snippet__spell",
-    "ct-feature-snippet__spell-summary",
-    "ct-feature-snippet__spell-sep",
-    "ct-feature-snippet__limited-use-extra",
-    "ct-slot-manager-large",
-    "ct-slot-manager-large__values",
-    "ct-slot-manager-large__label",
-    "ct-slot-manager-large__value-control",
-    "ct-slot-manager-large__value-control--use",
-    "ct-slot-manager-large__value",
-    "ct-slot-manager-large__value--cur",
-    "ct-slot-manager-large__value-control--gain",
-    "ddbc-combat-action-attack-general",
-    "ddbc-combat-attack__icon-img--action-attack-general-melee",
-    "prefix__st0",
-    "prefix__st1",
-    "prefix__st2",
-    "prefix__st3",
-    "prefix__st5",
-    "prefix__st6",
-    "prefix__st8",
-    "prefix__st9",
-    "prefix__st11",
-    "prefix__st12",
-    "prefix__st13",
-    "prefix__st15",
-    "prefix__st16",
-    "prefix__st18",
-    "prefix__st19",
-    "ddbc-combat-attack__empty"
-];
 function applyTextColor(newColor, num) {
-    // Determine an id for the style element based on which set you're targeting.
-    var styleId = (num) ? 'whiteTextColorStyle' : 'grayTextColorStyle';
+    const styleId = (num) ? 'whiteTextColorStyle' : 'grayTextColorStyle';
     let styleEl = document.getElementById(styleId);
-    // console.log(`${styleId}, ${num}`)
-    
-    // Create a style element if it doesn't exist.
     if (!styleEl) {
         styleEl = document.createElement('style');
         styleEl.id = styleId;
         document.head.appendChild(styleEl);
     }
     
-    var classes = (num) ? whiteClasses : grayClasses;
-    const selectors = classes
-        .filter(cls => cls.trim() !== "")
-        .map(cls => cls.trim().startsWith('.') ? cls.trim() : '.' + cls.trim())
-        .join(', ');
-    
-    // Update the CSS rule—this one rule applies to all matched elements.
-    var cssText = `
-        ${selectors}{
-            color: ${newColor} !important;
+    // Apply to both standard and dark mode versions
+    styleEl.innerHTML = `
+        .ct-character-sheet,
+        .ct-character-sheet--dark-mode { 
+            --text-color-${num}: ${newColor} !important; 
         }
     `;
-    var cssGreySVG = `
-        /* Only override fill if a fill attribute is present */
-        .ddbc-combat-attack * path[fill],
-        .ddbc-combat-attack * line[fill],
-        .ddbc-combat-attack * polygon[fill],
-        .ddbc-damage-type-icon__img path[fill],
-        .ddbc-damage-type-icon__img line[fill],
-        .ddbc-damage-type-icon__img polygon[fill],
-        .ddbc-damage-type-icon__img * path[fill],
-        .ddbc-damage-type-icon__img * line[fill],
-        .ddbc-damage-type-icon__img * polygon[fill],
-        .ddbc-spell-damage-effect__healing path[fill],
-        .ddbc-attunement-icon__icon path[fill],
-        .ddbc-attunement-icon__icon line[fill],
-        .ddbc-attunement-icon__icon polygon[fill],
-        .styles_svg__Jr\\+M- rect[fill],
-        .ddbc-aoe-type-icon path[fill],
-        .ddbc-collapsible__header-status path[fill],
-        .ddbc-attack-type-icon g[fill],
-        .ddbc-attack-type-icon path[fill] {
-            fill: ${newColor} !important;
-        }
-        
-        /* Only override stroke if a stroke attribute is present */
-        .ddbc-combat-attack * path[stroke],
-        .ddbc-combat-attack * line[stroke],
-        .ddbc-combat-attack * polygon[stroke],
-        .ddbc-damage-type-icon__img path[stroke],
-        .ddbc-damage-type-icon__img line[stroke],
-        .ddbc-damage-type-icon__img polygon[stroke],
-        .ddbc-damage-type-icon__img * path[stroke],
-        .ddbc-damage-type-icon__img * line[stroke],
-        .ddbc-damage-type-icon__img * polygon[stroke],
-        .ddbc-spell-damage-effect__healing path[stroke],
-        .ddbc-attunement-icon__icon path[stroke],
-        .ddbc-attunement-icon__icon line[fill],
-        .ddbc-attunement-icon__icon polygon[fill] {
-            stroke: ${newColor} !important;
-        }
-        
-        /* Dumb svgs */
-        .prefix__st0,prefix__st1,prefix__st2,prefix__st3 {
-            fill: ${newColor} !important
-        }
-    `;
-    if(!num){cssText = cssText+cssGreySVG}
-    styleEl.innerHTML = cssText;
 }
 window.applyTextColor = applyTextColor;
 
+function applyRarityAuras() {
+    const characterID = getCharacterID();
+    if (!characterID) return;
+
+    storage.get(`rarityAuras_${characterID}`).then(data => {
+        const enabled = data[`rarityAuras_${characterID}`] === 'true';
+        let styleEl = document.getElementById('customizer-rarity-styles');
+        
+        if (!enabled) {
+            if (styleEl) styleEl.innerHTML = '';
+            return;
+        }
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'customizer-rarity-styles';
+            document.head.appendChild(styleEl);
+        }
+
+        styleEl.innerHTML = `
+            /* Targets D&D Beyond's internal rarity classes using partial matching */
+            
+            /* Uncommon */
+            [class*="uncommon"] {
+                color: #1fc219 !important;
+            }
+
+            /* Rare */
+            [class*="rare"]:not([class*="veryrare"]) {
+                color: #0070dd !important;
+            }
+
+            /* Very Rare - Purple Glow */
+            [class*="veryrare"] { 
+                color: #a335ee !important;
+                text-shadow: 0 0 8px #a335ee, 0 0 12px #a335ee66, 1px 1px 1px black !important;
+                font-weight: bold !important;
+            }
+
+            /* Legendary - Gold/Orange Pulse */
+            [class*="legendary"] { 
+                color: #ff8000 !important;
+                text-shadow: 0 0 10px #ff8000, 0 0 15px #ff800066, 1px 1px 1px black !important;
+                font-weight: bold !important;
+                animation: legendary-text-pulse 2s infinite alternate !important;
+            }
+
+            /* Artifact - Prismatic Rainbow */
+            [class*="artifact"] { 
+                font-weight: bold !important;
+                animation: artifact-text-rainbow 4s infinite linear !important;
+                text-shadow: 0 0 10px rgba(255,255,255,0.4), 1px 1px 1px black !important;
+            }
+
+            @keyframes legendary-text-pulse {
+                from { text-shadow: 0 0 8px #ff8000, 0 0 12px #ff800044, 1px 1px 1px black; }
+                to { text-shadow: 0 0 12px #ff8000, 0 0 20px #ff800088, 1px 1px 1px black; }
+            }
+
+            @keyframes artifact-text-rainbow {
+                0% { color: #e6cc80; }
+                33% { color: #ff8000; }
+                66% { color: #a335ee; }
+                100% { color: #e6cc80; }
+            }
+        `;
+    });
+}
+window.applyRarityAuras = applyRarityAuras;
 
 // ----- Save Functions -----
 
-// Function to Save Backdrop
 function saveBackdrop(fileInput) {
     const characterID = getCharacterID();
-    if (!characterID) {
-        return;
-    }
-
     const file = fileInput.files[0];
-    if (!file) {
-        alert("No file selected!");
-        return;
-    }
+    if (!characterID || !file) return;
 
     const reader = new FileReader();
-    reader.onload = function (e) {
-        const imageData = e.target.result;
-        // console.log(`📤 Storing backdrop for Character ${characterID}`);
-
-        let saveData = {};
-        saveData[`backdrop_${characterID}`] = imageData;
-
+    reader.onload = (e) => {
+        const saveData = { [`backdrop_${characterID}`]: e.target.result };
         chrome.storage.local.set(saveData, () => {
-            // console.log(`✅ Backdrop saved for Character ${characterID}`);
             applyBackdrop();
         });
     };
-
     reader.readAsDataURL(file);
-};
+}
 window.saveBackdrop = saveBackdrop;
 
 function saveFrame(fileInput) {
     const characterID = getCharacterID();
-    if (!characterID) {
-        return;
-    }
-
     const file = fileInput.files[0];
-    if (!file) {
-        alert("No file selected!");
-        return;
-    }
+    if (!characterID || !file) return;
 
     const reader = new FileReader();
-    reader.onload = function (e) {
-        const imageData = e.target.result;
-        // console.log(`📤 Storing backdrop for Character ${characterID}`);
-
-        let saveData = {};
-        saveData[`frame_${characterID}`] = imageData;
-
+    reader.onload = (e) => {
+        const saveData = { [`frame_${characterID}`]: e.target.result };
         chrome.storage.local.set(saveData, () => {
-            // console.log(`✅ Backdrop saved for Character ${characterID}`);
             applyFrame();
         });
     };
-
     reader.readAsDataURL(file);
-};
+}
 window.saveFrame = saveFrame;
 
-// Save colors
 function saveColor(color, type){
     const characterID = getCharacterID();
-    if (!characterID) {
-        return;
-    };
-    if (!color || !type){
-        // console.log(`No color: ${color} or type: ${type}`)
-        return
-    }
-    let saveData = {};
-    // console.log(`${type}_${characterID}`)
-    saveData[`${type}_${characterID}`] = color;
-
-    chrome.storage.local.set(saveData, () => {
-        // console.log(`✅ ${type} color saved for character ${characterID}:`, saveData[`${type}_${characterID}`]);
-    });
-
+    if (!characterID || !color) return;
+    chrome.storage.local.set({ [`${type}_${characterID}`]: color });
 }
 window.saveColor = saveColor;
 
+// ----- Themed Cursors -----
+const cursorSVGs = {
+    sword: {
+        // Corrected to point Top-Left (0,0)
+        default: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDI1IDI1TTMgM0w2IDBNMyAzTDAgNk02IDBMMjQgMThNNiAwTDkgLTNNNjUgNiIsIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMgM0wyNSAyNSIgc3Ryb2tlPSIjY2NjIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==',
+        pointer: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDI1IDI1TTMgM0w2IDBNMyAzTDAgNk02IDBMMjQgMThNNiAwTDkgLTNNNjUgNiIsIHN0cm9rZT0iI2ZmMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMyAzTDI1IDI1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=='
+    },
+    wand: {
+        default: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDI1IDI1IiBzdHJva2U9IiM4QjQ1MTMiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMyIgY3k9IjMiIHI9IjMiIGZpbGw9IiMwMEZGRkYiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9zdmc+',
+        pointer: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDI1IDI1IiBzdHJva2U9IiM4QjQ1MTMiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMyIgY3k9IjMiIHI9IjUiIGZpbGw9IiMwMEZGRkYiLz48L3N2Zz4='
+    },
+    dagger: {
+        default: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDE3IDE3TDIxIDIxTDE3IDE3TDE2IDE0TDMgMyIgc3Ryb2tlPSIjNjY2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yMCAyMEwyNCAyNCIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==',
+        pointer: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzTDE3IDE3TDIxIDIxTDE3IDE3TDE2IDE0TDMgMyIgc3Ryb2tlPSIjY2NjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yMCAyMEwyNCAyNCIgc3Ryb2tlPSIjOTAwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=='
+    },
+    claw: {
+        default: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzUzcgMTUgMTUgMTlTMjUgMjUgMjUgMjUiIHN0cm9rZT0iIzQ0NCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMyAzQzYgMTUgMTQgMTQgMTUgMTkiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=',
+        pointer: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyAzUzcgMTUgMTUgMTlTMjUgMjUgMjUgMjUiIHN0cm9rZT0iIzkwMCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMyAzQzYgMTUgMTQgMTQgMTUgMTkiIHN0cm9rZT0iI2ZmMDAwMCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4='
+    }
+};
 
-// ------------------------------
-let rainbowInterval;
+function applyCursor(pack) {
+    let styleEl = document.getElementById('customizer-cursor-style');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'customizer-cursor-style';
+        document.head.appendChild(styleEl);
+    }
 
-function startRainbowMode() {
-    // console.log("🌈 Starting Rainbow Mode...");
-    let hue = 0;
+    if (pack === 'default' || !cursorSVGs[pack]) {
+        styleEl.innerHTML = '';
+        return;
+    }
 
-    rainbowInterval = setInterval(() => {
-        const hslToHex = (h, s, l) => {
-            l /= 100;
-            const a = s * Math.min(l, 1 - l) / 100;
-            const f = n => {
-            const k = (n + h / 30) % 12;
-            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-            return Math.round(255 * color).toString(16).padStart(2, '0');
-            };
-            return `#${f(0)}${f(8)}${f(4)}`;
-        };
-        const color = hslToHex(hue, 100, 50)+'ff';
+    const { default: def, pointer } = cursorSVGs[pack];
+    styleEl.innerHTML = `
+        * {
+            cursor: url("${def}"), auto !important;
+        }
+        a, button, [role="button"], .ct-character-header-desktop__button, .styles_valueButton__0rK5Z, input, select, [onclick], .ddbc-theme-link {
+            cursor: url("${pointer}"), pointer !important;
+        }
+    `;
+}
+window.applyCursor = applyCursor;
+
+// ----- Checkbox Theming -----
+function applyCheckboxTheming(color = '#ff0000', glow = 50, shape = 'diamond') {
+    const characterID = getCharacterID();
+    if (!characterID) return;
+
+    let styleEl = document.getElementById('customizer-checkbox-style');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'customizer-checkbox-style';
+        document.head.appendChild(styleEl);
+    }
+
+    const glowPx = glow / 3;
+    const darkerColor = color.replace(/^#/, '').replace(/../g, c => ('0' + Math.max(0, parseInt(c, 16) - 100).toString(16)).slice(-2));
+    
+    const icons = {
+        diamond: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2L2 12l10 10 10-10L12 2z'/%3E%3C/svg%3E",
+        shield: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z'/%3E%3C/svg%3E",
+        skull: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C7.03 2 3 6.03 3 11c0 2.21.81 4.21 2.14 5.75L5 22h14l-.14-5.25C20.19 15.21 21 13.21 21 11c0-4.97-4.03-9-9-9zm-3 9c-.83 0-1.5-.67-1.5-1.5S8.17 8 9 8s1.5.67 1.5 1.5S9.83 11 9 11zm6 0c-.83 0-1.5-.67-1.5-1.5S14.17 8 15 8s1.5.67 1.5 1.5S15.83 11 15 11z'/%3E%3C/svg%3E",
+        circle: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E",
+        square: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E"
+    };
+
+    const activeIcon = icons[shape] || icons.diamond;
+
+    styleEl.innerHTML = `
+        /* Target D&D Beyond Slot Managers and Dots */
+        .ct-slot-manager__slot, .ct-death-saves__dot, .integrated-dice__container--scaled {
+            background-color: rgba(0,0,0,0.3) !important;
+            border: 2px solid #${darkerColor} !important; /* Larger, darker persistent outline */
+            border-radius: 3px !important;
+            mask-size: 85% !important;
+            mask-repeat: no-repeat !important;
+            mask-position: center !important;
+            -webkit-mask-size: 85% !important;
+            -webkit-mask-repeat: no-repeat !important;
+            -webkit-mask-position: center !important;
+            -webkit-mask-image: url("${activeIcon}");
+            mask-image: url("${activeIcon}");
+            transition: all 0.2s ease !important;
+            position: relative;
+            overflow: visible !important;
+        }
+
+        /* When Checked/Used */
+        .ct-slot-manager__slot--used, .ct-death-saves__dot--success, .ct-death-saves__dot--fail, .ct-slot-manager__slot--active {
+            background-color: ${color} !important;
+            /* Soft Radial Glow using shadow */
+            box-shadow: 0 0 ${glowPx}px ${color}, 0 0 ${glowPx*2}px ${color}44 !important;
+            border-color: ${color} !important;
+        }
+
+        /* Hover effect */
+        .ct-slot-manager__slot:hover {
+            border-color: ${color} !important;
+            background-color: rgba(255,255,255,0.1) !important;
+        }
+
+        /* Hide original elements */
+        .ct-slot-manager__slot:before, .ct-slot-manager__slot:after {
+            display: none !important;
+        }
+    `;
+}
+window.applyCheckboxTheming = applyCheckboxTheming;
+
+// ----- Dynamic Health -----
+let vignetteEl;
+function initHealth() {
+    if (vignetteEl) return;
+    vignetteEl = document.createElement('div');
+    vignetteEl.id = 'health-vignette';
+    document.body.appendChild(vignetteEl);
+}
+
+function applyHealthOrb(percent, enabled) {
+    const hpBox = document.querySelector('[class*="hitPointsBox"]');
+    if (!hpBox) return;
+
+    const numbersContainer = hpBox.querySelector('[class*="innerContainer"]');
+    if (!numbersContainer) return;
+
+    let orb = numbersContainer.querySelector('.customizer-health-orb');
+    let orbStyle = document.getElementById('customizer-orb-styles');
+
+    if (!enabled) {
+        if (orb) orb.remove();
+        if (orbStyle) orbStyle.innerHTML = '';
+        hpBox.style.overflow = '';
+        return;
+    }
+
+    if (!orbStyle) {
+        orbStyle = document.createElement('style');
+        orbStyle.id = 'customizer-orb-styles';
+        document.head.appendChild(orbStyle);
+    }
+
+    // Surgical CSS overrides
+    orbStyle.innerHTML = `
+        /* Hide the "Hit Points" header and Current/Max labels */
+        [class*="hitPointsBox"] [class*="label__Ivf2i"],
+        [class*="innerContainer"] [class*="label__ysVMP"] {
+            display: none !important;
+        }
+
+        /* Ensure parent box allows overflowing orb */
+        [class*="hitPointsBox"] {
+            overflow: visible !important;
+        }
+
+        /* Container for the Current/Max numbers */
+        [class*="innerContainer"] {
+            position: relative !important;
+            z-index: 5 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 100px !important;
+            min-width: 80px !important; /* Reduced width to bring numbers together */
+            gap: 2px !important; /* Added a tight gap */
+            margin: 0 !important;
+            transform: translateY(-15px) !important; /* Move numbers up to match the orb's shift */
+        }
+
+        /* The Orb itself - Center it behind numbers */
+        .customizer-health-orb {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 105px !important;
+            height: 105px !important;
+            border-radius: 50% !important;
+            border: 4px solid #222 !important;
+            background: #000 !important;
+            box-shadow: 
+                0 0 15px rgba(0,0,0,0.8), 
+                inset 0 0 25px rgba(0,0,0,0.9),
+                0 0 8px var(--theme-color) !important;
+            z-index: -1 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+        }
         
-        applyBorderColor(color);
-        applyAccentColor(color);
-        // console.log(`🎨 Updated colors to ${color}`);
+        .customizer-health-orb::after {
+            content: "" !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: ${percent}% !important;
+            background: linear-gradient(0deg, #800 0%, #ff3333 100%) !important;
+            box-shadow: 0 0 40px #ff0000 !important;
+            transition: height 0.4s ease-out !important;
+        }
 
-        hue = (hue + 10) % 360; // Increment hue, loop at 360
-    }, 200); // Change color every 200ms
+        /* Style the numbers and slash inside orb */
+        [class*="innerContainer"] [class*="number__j1d93"] {
+            font-size: 22px !important; /* Slightly smaller for compactness */
+            line-height: 1 !important;
+            color: white !important;
+            text-shadow: 2px 2px 4px black !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        [class*="innerContainer"] [class*="slash__UmBPf"] {
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            transform: translateY(-5px) !important; /* Moved slash up even more */
+        }
+
+        /* Fix the input field when editing Current HP */
+        [class*="innerContainer"] input {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            height: 35px !important;
+            width: 50px !important;
+            z-index: 10 !important;
+            text-align: center !important;
+            background: #222 !important;
+            color: white !important;
+            border: 1px solid var(--theme-color) !important;
+        }
+    `;
+
+    if (!orb) {
+        orb = document.createElement('div');
+        orb.className = 'customizer-health-orb';
+        numbersContainer.insertBefore(orb, numbersContainer.firstChild);
+    }
 }
-window.startRainbowMode = startRainbowMode;
 
-function stopRainbowMode() {
-    // console.log("🛑 Stopping Rainbow Mode...");
-    clearInterval(rainbowInterval);
+function checkHealth(forcedPercent = null) {
     const characterID = getCharacterID();
-        if (characterID) {
-            for (const type of ['background', 'border', 'accent']) {
-                storage.get(`${type}_${characterID}`).then((data) => {
-                    if (data[`${type}_${characterID}`]) {
-                        // console.log(`${type} color found for character ${characterID}`);
-                        window[`apply${type.charAt(0).toUpperCase() + type.slice(1)}Color`](data[`${type}_${characterID}`]);
-                    } else {
-                        // console.log(`No ${type} color found for character ${characterID}`);
-                    }
-                }).catch(error => {
-                    console.error(`Error accessing ${type} storage:`, error);
-                })
+    if (!characterID) return;
+
+    Promise.all([
+        storage.get(`dynamicHealth_${characterID}`),
+        storage.get(`healthOrb_${characterID}`)
+    ]).then(([vignetteData, orbData]) => {
+        const vignetteEnabled = vignetteData[`dynamicHealth_${characterID}`] === 'true';
+        const orbEnabled = orbData[`healthOrb_${characterID}`] === 'true';
+
+        // Robustly find Current and Max HP
+        const currentHPButton = document.querySelector('[class*="item__UVpsr"] button[class*="number"]');
+        const currentHPInput = document.querySelector('[class*="item__UVpsr"] input');
+        const maxHPElement = document.querySelector('[data-testid="max-hp"], [class*="max-hp"], [class*="hp-number--max"]');
+        
+        let percent = 100;
+        if (forcedPercent !== null) {
+            percent = forcedPercent;
+        } else if (maxHPElement) {
+            let current = 0;
+            if (currentHPInput) {
+                current = parseInt(currentHPInput.value) || 0;
+            } else if (currentHPButton) {
+                current = parseInt(currentHPButton.innerText.trim()) || 0;
             }
-        };
+            
+            const max = parseInt(maxHPElement.innerText.trim()) || 1;
+            percent = Math.min(100, Math.max(0, (current / max) * 100));
+        }
+
+        applyHealthOrb(percent, orbEnabled);
+
+        if (!vignetteEnabled && forcedPercent === null) {
+            document.body.classList.remove('health-bloodied', 'health-critical');
+            const portrait = document.querySelector(".ddbc-character-avatar");
+            if (portrait) portrait.classList.remove('portrait-bloodied');
+            updateSavedColors(); 
+            return;
+        }
+
+        initHealth();
+        // ... (rest of the vignette logic)
+
+        console.log(`[Health Check] Percent: ${percent}%`);
+        const portrait = document.querySelector(".ddbc-character-avatar");
+
+        if (percent <= 25) {
+            document.body.classList.add('health-critical');
+            document.body.classList.remove('health-bloodied');
+            if (portrait) portrait.classList.add('portrait-bloodied');
+        } else if (percent <= 50) {
+            document.body.classList.add('health-bloodied');
+            document.body.classList.remove('health-critical');
+            if (portrait) portrait.classList.add('portrait-bloodied');
+        } else {
+            document.body.classList.remove('health-bloodied', 'health-critical');
+            if (portrait) portrait.classList.remove('portrait-bloodied');
+        }
+    });
 }
-window.stopRainbowMode = stopRainbowMode;
-// ------------------------------
+window.checkHealth = checkHealth;
 
+function triggerHealFlash() {
+    initHealth();
+    vignetteEl.classList.add('heal-flash');
+    setTimeout(() => {
+        vignetteEl.classList.remove('heal-flash');
+    }, 500); // Quick flash
+}
 
-// ----- Remove Functions -----
+// Global listener for heal button clicks
+document.addEventListener('click', (e) => {
+    // Look specifically for a button or themed element that contains "heal"
+    const healBtn = e.target.closest('button[class*="heal"], div[class*="heal"][role="button"], [class*="styles_heal"]');
+    if (healBtn) {
+        triggerHealFlash();
+    }
+}, true);
 
-// Function to remove the backdrop from storage
-function removeBackdrop() {
-    const characterID = getCharacterID();
-    if (!characterID) {
+// ----- Particle Engine -----
+let particleCanvas, ctx, particles = [], animationId;
+let currentParticleType = 'none', currentIntensity = 50, currentParticleColor = '#ffffff';
+let leafImage = new Image();
+leafImage.src = chrome.runtime.getURL('leaf.png');
+
+function initParticles() {
+    if (particleCanvas) return;
+    particleCanvas = document.createElement('canvas');
+    particleCanvas.id = 'customizer-particle-canvas';
+    particleCanvas.style.position = 'fixed';
+    particleCanvas.style.top = '0';
+    particleCanvas.style.left = '0';
+    particleCanvas.style.width = '100vw';
+    particleCanvas.style.height = '100vh';
+    particleCanvas.style.pointerEvents = 'none';
+    particleCanvas.style.zIndex = '5';
+    document.body.appendChild(particleCanvas);
+    ctx = particleCanvas.getContext('2d');
+
+    const updateSize = () => {
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', updateSize);
+    updateSize();
+}
+
+function applyParticles(type, intensity = 50, color = '#ffffff') {
+    if (currentParticleType === type && currentIntensity === intensity && currentParticleColor === color && particles.length > 0) {
+        return; // Don't reset if nothing changed
+    }
+    
+    currentParticleType = type;
+    currentIntensity = intensity;
+    currentParticleColor = color;
+    initParticles();
+    
+    // Clear and stop old animation if type is none
+    if (type === 'none') {
+        particles = [];
+        if (animationId) cancelAnimationFrame(animationId);
+        if (ctx) ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
         return;
     }
+    
+    particles = [];
+    if (animationId) cancelAnimationFrame(animationId);
+    createParticles();
+    animateParticles();
+}
+window.applyParticles = applyParticles;
 
-    chrome.storage.local.remove(`backdrop_${characterID}`, () => {
-        // console.log(`Backdrop removed for Character ${characterID}`);
-    });
-};
-window.removeBackdrop = removeBackdrop;
-
-function removeFrame() {
-    const characterID = getCharacterID();
-    if (!characterID) {
-        return;
+class Particle {
+    constructor() {
+        this.reset();
     }
 
-    chrome.storage.local.remove(`frame_${characterID}`, () => {
-        // console.log(`Frame removed for Character ${characterID}`);
-    });
-};
-window.removeFrame = removeFrame;
+    reset(isBurst = false) {
+        this.w = particleCanvas.width;
+        this.h = particleCanvas.height;
+        this.x = Math.random() * this.w;
+        // Start embers at the bottom, staggered
+        this.y = currentParticleType === 'embers' ? this.h + Math.random() * 100 : Math.random() * this.h;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 1;
+        this.speedY = (Math.random() - 0.5) * 1;
+        this.opacity = Math.random() * 0.5 + 0.3;
+        this.flicker = Math.random() * 0.2;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+        
+        const hexToRgba = (hex, opacity) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        };
 
+        this.baseColor = currentParticleColor;
 
-function removeColor(type) {
-    const characterID = getCharacterID();
-    if (!characterID) {
-        return;
+        if (currentParticleType === 'embers') {
+            this.speedY = -Math.random() * 1.5 - 0.5;
+            this.speedX = (Math.random() - 0.5) * 1.5;
+            this.size = Math.random() * 4 + 2;
+            if (isBurst) {
+                this.speedY *= 3;
+                this.size *= 2;
+                this.opacity = 1;
+            }
+        } else if (currentParticleType === 'rain') {
+            this.y = -20;
+            this.speedY = Math.random() * 10 + 10;
+            this.speedX = -1.5;
+            this.size = 1.2;
+        } else if (currentParticleType === 'snow') {
+            this.y = -10;
+            this.speedY = Math.random() * 1 + 0.5;
+            this.speedX = (Math.random() - 0.5) * 1;
+            this.size = Math.random() * 3 + 2;
+        } else if (currentParticleType === 'eldritch') {
+            this.size = Math.random() * 6 + 3;
+            this.speedY = (Math.random() - 0.5) * 0.6;
+            this.speedX = (Math.random() - 0.5) * 0.6;
+        } else if (currentParticleType === 'leaves' || currentParticleType === 'green_leaves' || currentParticleType === 'petals') {
+            this.y = -20;
+            this.speedY = Math.random() * 1 + 0.5;
+            this.speedX = Math.random() * 1.5 - 0.75;
+            this.size = Math.random() * 8 + 8;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+            if (currentParticleType === 'leaves') {
+                const autumnColors = ['#d35400', '#f39c12', '#c0392b'];
+                this.baseColor = autumnColors[Math.floor(Math.random() * autumnColors.length)];
+            }
+        } else if (currentParticleType === 'gears') {
+            this.size = Math.random() * 15 + 10;
+            this.speedY = (Math.random() - 0.5) * 0.3;
+            this.speedX = (Math.random() - 0.5) * 0.3;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.04;
+            this.teeth = Math.floor(Math.random() * 5) + 7;
+        } else if (currentParticleType === 'bubbles') {
+            this.y = this.h + 10;
+            this.speedY = -Math.random() * 1.5 - 0.5;
+            this.size = Math.random() * 5 + 3;
+        } else if (currentParticleType === 'sand') {
+            this.speedX = -Math.random() * 5 - 5;
+            this.speedY = Math.random() * 1;
+            this.x = this.w + 20;
+            this.size = Math.random() * 2 + 1;
+        } else if (currentParticleType === 'fog') {
+            this.size = Math.random() * 100 + 150;
+            this.speedX = Math.random() * 0.5 + 0.2;
+            this.speedY = (Math.random() - 0.5) * 0.2;
+            this.opacity = Math.random() * 0.1 + 0.05;
+        } else if (currentParticleType === 'stars') {
+            this.speedX = 0;
+            this.speedY = 0;
+            this.size = Math.random() * 2 + 1;
+            this.opacity = Math.random();
+            this.twinkleSpeed = Math.random() * 0.03 + 0.01;
+        } else if (currentParticleType === 'lightning') {
+            this.opacity = 0;
+            this.strikeData = null;
+        }
+
+        this.color = hexToRgba(this.baseColor, this.opacity);
     }
 
-    chrome.storage.local.remove(`${type}_${characterID}`, () => {
-        // console.log(`${type} color removed for Character ${characterID}`);
+    update() {
+        if (currentParticleType === 'lightning') {
+            if (Math.random() < 0.001 && this.opacity <= 0) { // Much rarer
+                this.opacity = 1;
+                this.x = Math.random() * this.w;
+                this.strikeData = [];
+                let curX = this.x;
+                let curY = 0;
+                while (curY < this.h) {
+                    let nextX = curX + (Math.random() - 0.5) * 60;
+                    let nextY = curY + Math.random() * 40 + 20;
+                    this.strikeData.push({x1: curX, y1: curY, x2: nextX, y2: nextY});
+                    curX = nextX;
+                    curY = nextY;
+                }
+            }
+            if (this.opacity > 0) this.opacity -= 0.05; // Fade slower
+            return;
+        }
+
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.rotation += this.rotationSpeed;
+
+        if (currentParticleType === 'bubbles') {
+            this.x += Math.sin(this.y * 0.05) * 1;
+        } else if (currentParticleType === 'stars') {
+            this.opacity += this.twinkleSpeed;
+            if (this.opacity > 1 || this.opacity < 0.1) this.twinkleSpeed *= -1;
+        }
+
+        const r = parseInt(this.baseColor.slice(1, 3), 16);
+        const g = parseInt(this.baseColor.slice(3, 5), 16);
+        const b = parseInt(this.baseColor.slice(5, 7), 16);
+        this.color = `rgba(${r}, ${g}, ${b}, ${Math.max(0, this.opacity)})`;
+
+        // Check for out of bounds and reset
+        if (currentParticleType !== 'stars' && currentParticleType !== 'lightning') {
+            const isOut = this.y > this.h + 50 || 
+                         this.y < -50 || 
+                         this.x < -100 || 
+                         this.x > this.w + 100;
+            if (isOut) this.reset();
+        }
+    }
+
+    draw() {
+        if (currentParticleType === 'rain') {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.speedX, this.y + this.speedY);
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size;
+            ctx.stroke();
+            return;
+        }
+
+        if (currentParticleType === 'lightning' && this.opacity > 0 && this.strikeData) {
+            ctx.beginPath();
+            this.strikeData.forEach(d => {
+                ctx.moveTo(d.x1, d.y1);
+                ctx.lineTo(d.x2, d.y2);
+            });
+            const r = parseInt(currentParticleColor.slice(1, 3), 16);
+            const g = parseInt(currentParticleColor.slice(3, 5), 16);
+            const b = parseInt(currentParticleColor.slice(5, 7), 16);
+            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${this.opacity})`;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = currentParticleColor;
+            ctx.stroke();
+            return;
+        }
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+
+        if (currentParticleType === 'eldritch') {
+            ctx.beginPath();
+            ctx.moveTo(0, -this.size);
+            ctx.lineTo(this.size * 0.3, -this.size * 0.2);
+            ctx.lineTo(this.size, 0);
+            ctx.lineTo(this.size * 0.3, this.size * 0.2);
+            ctx.lineTo(0, this.size);
+            ctx.lineTo(-this.size * 0.3, this.size * 0.2);
+            ctx.lineTo(-this.size, 0);
+            ctx.lineTo(-this.size * 0.3, -this.size * 0.2);
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+        } else if (currentParticleType === 'embers') {
+            ctx.beginPath();
+            ctx.moveTo(-this.size * 0.5, -this.size * 0.2);
+            ctx.lineTo(this.size * 0.3, -this.size * 0.6);
+            ctx.lineTo(this.size * 0.6, 0.2);
+            ctx.lineTo(0.1, this.size * 0.5);
+            ctx.lineTo(-this.size * 0.4, 0.4);
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+        } else if (currentParticleType === 'leaves' || currentParticleType === 'green_leaves') {
+            if (leafImage.complete) {
+                // Ensure no shadow/blur is active for the image
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'transparent';
+                
+                // Draw the leaf
+                ctx.drawImage(leafImage, -this.size, -this.size, this.size * 2, this.size * 2);
+                
+                // Only apply tint if it's not the default white or if it's autumn leaves
+                if (this.baseColor !== '#ffffff' || currentParticleType === 'leaves') {
+                    ctx.globalCompositeOperation = 'source-atop';
+                    ctx.fillStyle = this.color;
+                    // Slightly smaller fill to prevent edge bleeding "boxes"
+                    ctx.fillRect(-this.size - 1, -this.size - 1, this.size * 2 + 2, this.size * 2 + 2);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size);
+                ctx.bezierCurveTo(this.size, -this.size, this.size, this.size, 0, this.size);
+                ctx.bezierCurveTo(-this.size, this.size, -this.size, -this.size, 0, -this.size);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        } else if (currentParticleType === 'petals') {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(this.size, -this.size, this.size * 1.5, this.size, 0, this.size);
+            ctx.bezierCurveTo(-this.size * 1.5, this.size, -this.size, -this.size, 0, 0);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        } else if (currentParticleType === 'gears') {
+            const innerRadius = this.size * 0.7;
+            const outerRadius = this.size;
+            const holeRadius = this.size * 0.3;
+
+            ctx.beginPath();
+            // Create gear teeth
+            for (let i = 0; i < this.teeth; i++) {
+                const angle = (i / this.teeth) * Math.PI * 2;
+                const nextAngle = ((i + 0.5) / this.teeth) * Math.PI * 2;
+                
+                ctx.lineTo(Math.cos(angle) * innerRadius, Math.sin(angle) * innerRadius);
+                ctx.lineTo(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius);
+                ctx.lineTo(Math.cos(nextAngle) * outerRadius, Math.sin(nextAngle) * outerRadius);
+                ctx.lineTo(Math.cos(nextAngle) * innerRadius, Math.sin(nextAngle) * innerRadius);
+            }
+            
+            // Create central hole (counter-clockwise path)
+            ctx.moveTo(holeRadius, 0);
+            ctx.arc(0, 0, holeRadius, 0, Math.PI * 2, true);
+            
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+        } else if (currentParticleType === 'bubbles') {
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-this.size * 0.3, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fill();
+        } else if (currentParticleType === 'stars') {
+            ctx.beginPath();
+            for (let i = 0; i < 4; i++) {
+                ctx.rotate(Math.PI / 2);
+                ctx.lineTo(this.size, 0);
+                ctx.lineTo(0.2 * this.size, 0.2 * this.size);
+            }
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+        } else if (currentParticleType === 'fog') {
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+            grad.addColorStop(0, this.color);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+
+function createParticles() {
+    const count = Math.floor((currentIntensity / 100) * 200);
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+    }
+}
+
+function animateParticles() {
+    ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+    
+    // Occasional Fire Roar
+    if (currentParticleType === 'embers' && Math.random() < 0.01) {
+        const roarCount = Math.floor(Math.random() * 5) + 5;
+        for(let i = 0; i < roarCount; i++) {
+            const p = particles[Math.floor(Math.random() * particles.length)];
+            if (p) p.reset(true);
+        }
+    }
+
+    particles.forEach(p => {
+        p.update();
+        p.draw();
     });
-};
-window.removeBackdrop = removeBackdrop;
+    animationId = requestAnimationFrame(animateParticles);
+}
 
-
-// ----- Event Listeners and Observers -----
+// ----- Initialization -----
 function updateSavedColors(){
     const characterID = getCharacterID();
-    if (characterID) {
-        for (const type of ['background', 'header', 'border', 'accent', 'text1', 'text0']) {
-            storage.get(`${type}_${characterID}`).then((data) => {
-
-                var typeOf = type
-                var num = 3
-                if(typeOf.slice(0,4) == 'text'){num = Number(typeOf.slice(-1)); typeOf = 'text';}
-
-                if (data[`${type}_${characterID}`]) {
-                    // console.log(`${type} color found for character ${characterID}`);
-                    // console.log(`${type}_${characterID}, numero: ${num}`)
-                    window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-                } else {
-                    // console.log(`No ${type} color found for character ${characterID}`);
+    if (!characterID) return;
+    
+    const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'cursorPack', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'rarityAuras'];
+    types.forEach(type => {
+        storage.get(`${type}_${characterID}`).then((data) => {
+            const val = data[`${type}_${characterID}`];
+            if (val) {
+                if (type === 'background') applyBackgroundColor(val);
+                else if (type === 'header') applyHeaderColor(val);
+                else if (type === 'border') applyBorderColor(val);
+                else if (type === 'accent') applyAccentColor(val);
+                else if (type === 'cursorPack') applyCursor(val);
+                else if (type === 'portraitShape') applyPortraitShape(val);
+                else if (type === 'customFont') applyFont(val);
+                else if (type === 'rarityAuras') applyRarityAuras();
+                else if (type === 'checkboxColor') {
+                    if (val) {
+                        Promise.all([
+                            storage.get(`checkboxGlow_${characterID}`),
+                            storage.get(`checkboxShape_${characterID}`)
+                        ]).then(([gData, sData]) => {
+                            applyCheckboxTheming(
+                                val, 
+                                gData[`checkboxGlow_${characterID}`] || 50,
+                                sData[`checkboxShape_${characterID}`] || 'diamond'
+                            );
+                        });
+                    } else {
+                        const styleEl = document.getElementById('customizer-checkbox-style');
+                        if (styleEl) styleEl.innerHTML = '';
+                    }
                 }
-            }).catch(error => {
-                console.error(`Error accessing ${type} storage: `, error);
-            })
-        }
-    };
-};
-
-
-// DOM ready
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    console.log("DOM is ready listener");
-    applyBackdrop();
-   applyFrame();
-    injectButton();
-    updateSavedColors();
-
-    // const characterID = getCharacterID();
-    // if (characterID) {
-    //     for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
-    //         storage.get(`${type}_${characterID}`).then((data) => {
-
-    //             var typeOf = type
-    //             var num = 3
-    //             if(typeOf.slice(0,4) == 'text'){num = typeOf.slice(-1); typeOf = 'text';}
-
-    //             if (data[`${type}_${characterID}`]) {
-    //                 // console.log(`${type} color found for character ${characterID}`);
-    //                 window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-    //             } else {
-    //                 // console.log(`No ${type} color found for character ${characterID}`);
-    //             }
-    //         }).catch(error => {
-    //             console.error(`Error accessing ${type} storage: `, error);
-    //         })
-    //     }
-    // };
-
-} else {
-    document.addEventListener("DOMContentLoaded", () => {
-        console.log("DOM is loaded listener");
-        applyBackdrop();
-      applyFrame();
-        injectButton();
-        updateSavedColors();
-
-        // const characterID = getCharacterID();
-        // if (characterID) {
-        //     for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
-        //         storage.get(`${type}_${characterID}`).then((data) => {
-    
-        //             var typeOf = type
-        //             var num = 3
-        //             if(typeOf.slice(0,4) == 'text'){num = typeOf.slice(-1); typeOf = 'text';}
-    
-        //             if (data[`${type}_${characterID}`]) {
-        //                 // console.log(`${type} color found for character ${characterID}`);
-        //                 window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-        //             } else {
-        //                 // console.log(`No ${type} color found for character ${characterID}`);
-        //             }
-        //         }).catch(error => {
-        //             console.error(`Error accessing ${type} storage: `, error);
-        //         })
-        //     }
-        // };
+                else if (type.startsWith('text')) applyTextColor(val, parseInt(type.slice(-1)));
+                else if (type === 'particleType') {
+                    Promise.all([
+                        storage.get(`particleIntensity_${characterID}`),
+                        storage.get(`particleColor_${characterID}`)
+                    ]).then(([iData, cData]) => {
+                        applyParticles(
+                            val, 
+                            iData[`particleIntensity_${characterID}`] || 50,
+                            cData[`particleColor_${characterID}`] || '#ffffff'
+                        );
+                    });
+                }
+            }
+        });
     });
 }
 
-// Run when the page loads
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM is content listener");
+const initialize = () => {
     applyBackdrop();
-   applyFrame();
+    applyFrame();
     injectButton();
     updateSavedColors();
+    checkHealth();
+    applyRarityAuras();
+};
 
-    // const characterID = getCharacterID();
-    // if (characterID) {
-    //     for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
-    //         storage.get(`${type}_${characterID}`).then((data) => {
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    initialize();
+} else {
+    document.addEventListener("DOMContentLoaded", initialize);
+}
 
-    //             var typeOf = type
-    //             var num = 3
-    //             if(typeOf.slice(0,4) == 'text'){num = typeOf.slice(-1); typeOf = 'text';}
-
-    //             if (data[`${type}_${characterID}`]) {
-    //                 // console.log(`${type} color found for character ${characterID}`);
-    //                 window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-    //             } else {
-    //                 // console.log(`No ${type} color found for character ${characterID}`);
-    //             }
-    //         }).catch(error => {
-    //             console.error(`Error accessing ${type} storage: `, error);
-    //         })
-    //     }
-    // };
-});
-
-// Fix for Firefox: Ensure storage access is allowed
-document.addEventListener("visibilitychange", () => {
-    // console.log("visibility change listener");
-    if (document.visibilityState === "visible") {
-        applyBackdrop();
-         applyFrame();
-        // injectButton();
-        updateSavedColors();
-
-        // const characterID = getCharacterID();
-        // if (characterID) {
-        //     for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
-        //         storage.get(`${type}_${characterID}`).then((data) => {
+const observer = new MutationObserver(debounce(() => {
+    // Only re-apply if critical elements are missing or sheet re-rendered
+    if (!document.getElementById('customizer-particle-canvas')) initParticles();
     
-        //             var typeOf = type
-        //             var num = 3
-        //             if(typeOf.slice(0,4) == 'text'){num = typeOf.slice(-1); typeOf = 'text';}
+    // Check if backdrop is still applied
+    const body = document.querySelector("body.body-rpgcharacter-sheet");
+    if (body && !body.style.backgroundImage) applyBackdrop();
     
-        //             if (data[`${type}_${characterID}`]) {
-        //                 // console.log(`${type} color found for character ${characterID}`);
-        //                 window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-        //             } else {
-        //                 // console.log(`No ${type} color found for character ${characterID}`);
-        //             }
-        //         }).catch(error => {
-        //             console.error(`Error accessing ${type} storage: `, error);
-        //         })
-        //     }
-        // };
-    }
-});
-
-// Monitor for dynamically loaded content (in case the backdrop is loaded late)
-const debouncedButton = debounce(injectButton,10);
-const observer = new MutationObserver(() => {
-    console.log("Mutation observer");
-
-    applyBackdrop();
-   applyFrame();
+    // Check if frame is still applied
+    if (!document.querySelector(".custom-frame-overlay")) applyFrame();
+    
+    if(!document.getElementById(injectedBtnId)) injectButton();
+    
+    checkHealth();
     updateSavedColors();
-    
-    const buttonPresente = document.getElementById(injectedBtnId)
-    if(!buttonPresente && !injectionPending){
-        console.log("test");
-        debouncedButton();
-    }
+    applyRarityAuras();
+}, 200));
 
-    // const characterID = getCharacterID();
-    // if (characterID) {
-    //     for (const type of ['background', 'border', 'accent', 'text1', 'text0']) {
-    //         storage.get(`${type}_${characterID}`).then((data) => {
-
-    //             var typeOf = type
-    //             var num = 3
-    //             if(typeOf.slice(0,4) == 'text'){num = typeOf.slice(-1); typeOf = 'text';}
-
-    //             if (data[`${type}_${characterID}`]) {
-    //                 // console.log(`${type} color found for character ${characterID}`);
-    //                 window[`apply${typeOf.charAt(0).toUpperCase() + typeOf.slice(1)}Color`](data[`${type}_${characterID}`],num);
-    //             } else {
-    //                 // console.log(`No ${type} color found for character ${characterID}`);
-    //             }
-    //         }).catch(error => {
-    //             console.error(`Error accessing ${type} storage: `, error);
-    //         })
-    //     }
-    // };
-
-});
 observer.observe(document.body, { childList: true, subtree: true });
-
-// -----
-console.log("Watching for changes..."); 
