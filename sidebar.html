@@ -39,7 +39,7 @@
             <!-- Scrollable Content -->
             <div class="sidebar-content-scrollable">
                 <div class="sidebar-header-area">
-                    <h2 class="headerSidebar">D&D Beyond Customizer</h2>
+                    <h2 class="headerSidebar">Character Customizer</h2>
                     <div class="top-buttons">
                         <button id="resetBtn" class="remove-btn">Reset All</button>
                         <button id="rainbowModeBtn" class="rainbow-btn" value='1'>Party Time?</button>
@@ -47,16 +47,19 @@
                 </div>
 
                 <div class="collapsible-wrapper">
+                    <!-- Section 1: Environment & Layout -->
+                    <h2 style="color: #888; font-size: 12px; text-transform: uppercase; margin: 20px 0 10px 5px; border-bottom: 1px solid #444;">Environment & Assets</h2>
+                    
                     <h3 class="collapsible">Backdrop Management</h3>
                     <div class="content">
                         <input type="file" id="backdropFileInput" accept="image/*">
                         <div class="button-container">
                             <button id="saveBackdropBtn" class="save-btn">Apply Backdrop</button>
-                            <button id="removeBackdropBtn" class="remove-btn">Reset Backdrop</button>
+                            <button id="removeBackdropBtn" class="remove-btn">Reset</button>
                         </div>
                     </div>
 
-                    <h3 class="collapsible">Frame Management</h3>
+                    <h3 class="collapsible">Portrait Frame</h3>
                     <div class="content">
                         <input type="file" id="frameFileInput" accept="image/*">
                         <div class="color-picker-group" style="margin-top: 10px;">
@@ -71,58 +74,78 @@
                         </div>
                         <div class="button-container">
                             <button id="saveFrameBtn" class="save-btn">Apply Frame</button>
-                            <button id="removeFrameBtn" class="remove-btn">Reset Frame</button>
+                            <button id="removeFrameBtn" class="remove-btn">Reset</button>
                         </div>
                     </div>
 
-                    <h3 class="collapsible">Box Background Color</h3>
+                    <!-- Section 2: Colors & Typography -->
+                    <h2 style="color: #888; font-size: 12px; text-transform: uppercase; margin: 25px 0 10px 5px; border-bottom: 1px solid #444;">Colors & Typography</h2>
+
+                    <h3 class="collapsible">Box Styles & Color</h3>
                     <div class="content">
                         <div class="color-picker-group">
-                            <label>Box Style:</label>
+                            <label>Box Material:</label>
                             <select id="boxStyleSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
-                                <option value="solid">Solid Color (Default)</option>
+                                <option value="solid">Solid Color</option>
                                 <option value="frosted">Frosted Glass</option>
                                 <option value="parchment">Ancient Parchment</option>
-                                <option value="stone">Stone</option>
+                                <option value="stone">Hewn Stone</option>
                             </select>
-                            <label>Color:</label>
+                            <label>Base Color:</label>
                             <input type="color" id="colorInputBg">
-                            <label>Transparency:</label>
+                            <label>Material Transparency:</label>
                             <input type="range" id="alphaInputBg" min="0" max="100" value="100">
                         </div>
-                        <button id="removeColorBg" class="remove-btn">Reset Color</button>
+                        <button id="removeColorBg" class="remove-btn">Reset to Default</button>
                     </div>
 
-                    <h3 class="collapsible">Header Background Color</h3>
+                    <h3 class="collapsible">Border & Accent Colors</h3>
                     <div class="content">
                         <div class="color-picker-group">
-                            <label>Color:</label>
+                            <label>Box Border Color:</label>
+                            <input type="color" id="colorInputBo">
+                            <input type="range" id="alphaInputBo" min="0" max="100" value="100">
+                            
+                            <label style="margin-top: 10px;">UI Accent Color:</label>
+                            <input type="color" id="colorInputAc">
+                            
+                            <label style="margin-top: 10px;">Header Background:</label>
                             <input type="color" id="colorInputHd">
-                            <label>Transparency:</label>
                             <input type="range" id="alphaInputHd" min="0" max="100" value="100">
                         </div>
-                        <button id="removeColorHd" class="remove-btn">Reset Color</button>
+                        <div class="button-container">
+                            <button id="removeColorBo" class="remove-btn" style="font-size: 11px;">Reset Border</button>
+                            <button id="removeColorAc" class="remove-btn" style="font-size: 11px;">Reset Accent</button>
+                        </div>
                     </div>
 
-                    <h3 class="collapsible">Box Border Color</h3>
+                    <h3 class="collapsible">Typography & Text</h3>
                     <div class="content">
                         <div class="color-picker-group">
-                            <label>Color:</label>
-                            <input type="color" id="colorInputBo">
-                            <label>Transparency:</label>
-                            <input type="range" id="alphaInputBo" min="0" max="100" value="100">
+                            <label>Global Font:</label>
+                            <select id="fontSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="default">Site Default</option>
+                                <option value="Cinzel">Cinzel (Classic RPG)</option>
+                                <option value="MedievalSharp">MedievalSharp (Fantasy)</option>
+                                <option value="Pirata One">Pirata One (Gothic)</option>
+                                <option value="Orbitron">Orbitron (Sci-Fi)</option>
+                                <option value="Permanent Marker">Permanent Marker</option>
+                                <option value="EB Garamond">EB Garamond (Elegant)</option>
+                            </select>
+                            <button id="resetFont" class="remove-btn" style="margin-top: 5px;">Reset Font</button>
+
+                            <label style="margin-top: 15px;">Primary Text Color:</label>
+                            <input type="color" id="colorText1">
+                            <button id="removeText1" class="remove-btn" style="margin-top: 5px;">Reset</button>
+
+                            <label style="margin-top: 10px;">Secondary Text Color:</label>
+                            <input type="color" id="colorText0">
+                            <button id="removeText2" class="remove-btn" style="margin-top: 5px;">Reset</button>
                         </div>
-                        <button id="removeColorBo" class="remove-btn">Reset Color</button>
                     </div>
 
-                    <h3 class="collapsible">Accent Color</h3>
-                    <div class="content">
-                        <div class="color-picker-group">
-                            <label>Color:</label>
-                            <input type="color" id="colorInputAc">
-                        </div>
-                        <button id="removeColorAc" class="remove-btn">Reset Color</button>
-                    </div>
+                    <!-- Section 3: Game Visuals -->
+                    <h2 style="color: #888; font-size: 12px; text-transform: uppercase; margin: 25px 0 10px 5px; border-bottom: 1px solid #444;">Game Visuals</h2>
 
                     <h3 class="collapsible">Dynamic Health</h3>
                     <div class="content">
@@ -134,67 +157,7 @@
                             <label>Health Orb Layout:</label>
                             <input type="checkbox" id="healthOrbToggle" style="width: 20px; height: 20px;">
                         </div>
-                        <p style="font-size: 12px; color: #ccc; margin-top: 5px;">Visual effects that react to your HP percentage.</p>
-                    </div>
-
-                    <h3 class="collapsible">Themed Cursors</h3>
-                    <div class="content">
-                        <div class="color-picker-group">
-                            <label>Cursor Pack:</label>
-                            <select id="cursorPackSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
-                                <option value="default">Default System</option>
-                                <option value="sword">Steel Sword (Fighter)</option>
-                                <option value="wand">Glowing Wand (Mage)</option>
-                                <option value="dagger">Dark Dagger (Rogue)</option>
-                                <option value="claw">Dragon Claw (Monstrous)</option>
-                            </select>
-                        </div>
-                        <button id="resetCursor" class="remove-btn">Reset to Default</button>
-                    </div>
-
-                    <h3 class="collapsible">Inventory Visuals</h3>
-                    <div class="content">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                            <label>Item Rarity Auras:</label>
-                            <input type="checkbox" id="rarityAurasToggle" style="width: 20px; height: 20px;">
-                        </div>
-                        <p style="font-size: 12px; color: #ccc; margin-top: 5px;">Adds glowing borders and auras to items based on their rarity.</p>
-                    </div>
-
-                    <h3 class="collapsible">Themed Checkboxes</h3>
-                    <div class="content">
-                        <div class="color-picker-group">
-                            <label>Shape:</label>
-                            <select id="checkboxShape" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
-                                <option value="diamond">Diamond</option>
-                                <option value="square">Square</option>
-                                <option value="shield">Shield</option>
-                                <option value="skull">Skull</option>
-                                <option value="circle">Classic Circle</option>
-                            </select>
-                            <label>Checkbox Tint:</label>
-                            <input type="color" id="checkboxColor" value="#ff0000">
-                            <label>Glow Intensity:</label>
-                            <input type="range" id="checkboxGlow" min="0" max="100" value="50">
-                        </div>
-                        <button id="resetCheckboxes" class="remove-btn">Disable Theming</button>
-                    </div>
-
-                    <h3 class="collapsible">Custom Fonts</h3>
-                    <div class="content">
-                        <div class="color-picker-group">
-                            <label>Character Sheet Font:</label>
-                            <select id="fontSelect" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
-                                <option value="default">Default Site Font</option>
-                                <option value="Cinzel">Cinzel (Classic RPG)</option>
-                                <option value="MedievalSharp">MedievalSharp (Fantasy)</option>
-                                <option value="Pirata One">Pirata One (Gothic)</option>
-                                <option value="Orbitron">Orbitron (Sci-Fi)</option>
-                                <option value="Permanent Marker">Permanent Marker (Handwritten)</option>
-                                <option value="EB Garamond">EB Garamond (Elegant)</option>
-                            </select>
-                        </div>
-                        <button id="resetFont" class="remove-btn">Reset to Default</button>
+                        <p style="font-size: 11px; color: #aaa; line-height: 1.4;">Visual effects that react to your HP percentage.</p>
                     </div>
 
                     <h3 class="collapsible">Particle Effects</h3>
@@ -203,13 +166,13 @@
                             <label>Effect Type:</label>
                             <select id="particleEffectType" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
                                 <option value="none">None</option>
-                                <option value="leaves">Autumn Leaves</option>
                                 <option value="gears">Clockwork Gears</option>
+                                <option value="leaves">Autumn Leaves</option>
                                 <option value="sand">Desert Sand</option>
                                 <option value="eldritch">Eldritch Sparks</option>
                                 <option value="embers">Fire Embers</option>
                                 <option value="green_leaves">Green Leaves</option>
-                                <option value="magic">Holy/Healing Light</option>
+                                <option value="magic">Holy Light</option>
                                 <option value="lightning">Lightning Flashes</option>
                                 <option value="petals">Pink Petals</option>
                                 <option value="rain">Rain Drops</option>
@@ -226,17 +189,27 @@
                         <button id="resetParticles" class="remove-btn">Disable Particles</button>
                     </div>
 
-                    <h3 class="collapsible">Text Colors</h3>
+                    <h3 class="collapsible">UI & Inventory</h3>
                     <div class="content">
-                        <div class="color-picker-group">
-                            <label>Text Color 1:</label>
-                            <input type="color" id="colorText1">
-                            <button id="removeText1" class="remove-btn">Reset</button>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <label>Item Rarity Auras:</label>
+                            <input type="checkbox" id="rarityAurasToggle" style="width: 20px; height: 20px;">
                         </div>
-                        <div class="color-picker-group">
-                            <label>Text Color 2:</label>
-                            <input type="color" id="colorText0">
-                            <button id="removeText2" class="remove-btn">Reset</button>
+                        
+                        <div class="color-picker-group" style="margin-top: 15px;">
+                            <label>Checkbox Shape:</label>
+                            <select id="checkboxShape" style="width: 100%; background: #333; color: white; border: 1px solid var(--theme-color); padding: 5px; border-radius: 4px;">
+                                <option value="diamond">Diamond</option>
+                                <option value="square">Square</option>
+                                <option value="shield">Shield</option>
+                                <option value="skull">Skull</option>
+                                <option value="circle">Circle</option>
+                            </select>
+                            <label>Checkbox Tint:</label>
+                            <input type="color" id="checkboxColor" value="#ff0000">
+                            <label>Glow Intensity:</label>
+                            <input type="range" id="checkboxGlow" min="0" max="100" value="50">
+                            <button id="resetCheckboxes" class="remove-btn" style="margin-top: 5px;">Reset Checkboxes</button>
                         </div>
                     </div>
                 </div>

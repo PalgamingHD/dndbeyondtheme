@@ -1,62 +1,64 @@
-# D&D Beyond Backdrop & Theme Customizer
+# D&D Beyond Character Customizer
 
 ## About
 
-D&D Beyond Backdrop & Theme Customizer is a browser extension that allows users to replace character backdrop images on **D&D Beyond** and customize the theme colors of their character sheet.
-
-
-Note: This is a fork of the official extension from the chrome webstore (MIT License). couldn't find it on github to edit so I made my own setup. Hopefully y'all enjoy. 
-## Features
-
-- **Custom Backdrops** – Upload and save a unique backdrop for each character.
-- **Theme Customization** – Change **box borders, accent colors, and background colors** of character sheets.
-- **Persistent Sidebar UI** – Access all options via a sidebar instead of a popup.
-- **No Reload Required** – Apply changes instantly without refreshing the page.
-- **One-Click Removal** – Reset backdrops or theme colors at any time.
-- **Secret Party Mode 🎉** – Discover a fun feature by experimenting with the UI.
-- **Works on Chrome & Firefox** – Built with **Manifest V3** for modern browser compatibility.
-
-## Installation as Unpacked
-
-### For Chrome
-
-1. Download or clone this repository.
-2. Open `chrome://extensions/` in Chrome.
-3. Enable **Developer Mode** (toggle in the top-right corner).
-4. Click **Load Unpacked** and select the extension folder.
-5. The extension should now be active!
-
-### For Firefox
-
-1. Download or clone this repository.
-2. Open `about:addons` in Firefox.
-3. Click **Load Temporary Add-on**.
-4. Select the `manifest.json` file inside the extension folder.
-5. The extension should now be active!
-
-## How to Use
-
-1. Open your **D&D Beyond** character page (`https://www.dndbeyond.com/characters/XXXXXX`).
-2. Click the **extension icon** or the **sidebar button** on the character sheet.
-3. The sidebar will appear on the right side of the screen.
-4. Use the sidebar to:
-   - **Upload and save** a backdrop.
-   - **Customize theme colors** (box borders, accents, background).
-   - **Remove saved settings** with a single click.
-5. **Party Mode?** Find out for yourself! 🎨✨
-
-## Troubleshooting
-
-### **Backdrop or Theme Customization Doesn't Apply?**
-- Ensure you **refresh the page** after making changes.
-- Check the **Console** (`F12` > Console tab) for errors.
-- Try **removing & reloading** the extension.
-
-## License
-
-This project is licensed under the **MIT License**.
+**D&D Beyond Character Customizer** is a powerful browser extension (Chrome & Firefox) that transforms the standard character sheet into a premium, immersive RPG experience. It provides extensive visual tools to theme your sheet according to your character's class, background, or campaign setting.
 
 ---
 
-Enjoy customizing your **D&D Beyond** experience!
+## 🎨 Visual Features
 
+### 🖼️ Environment & Assets
+- **Custom Backdrops** – Upload and save unique high-resolution backgrounds for each character.
+- **Dynamic Frames** – Upload custom portrait frames and choose from multiple masking shapes (Circle, Diamond, Hexagon, etc.).
+
+### 💎 Component Materials
+- **Advanced Box Styles** – Choose between **Solid Color**, **Frosted Glass** (with dynamic backdrop blur), **Ancient Parchment**, or **Hewn Stone**.
+- **SVG Clipping** – Textures like Stone and Parchment are surgically clipped to the exact shape of D&D Beyond's UI boxes (like the AC shield) for a perfect fit.
+
+### 🌈 Global Theme Control
+- **Unified Color Overrides** – Change the color of box backgrounds, borders, headers, and UI accents with one click.
+- **Aggressive Theming** – Overrides "stuck" D&D Beyond colors on proficiency dots, inspiration suns, cast buttons, and modifier boxes.
+- **Google Fonts Integration** – Choose from fantasy-ready fonts like *Cinzel*, *MedievalSharp*, and *Pirata One*.
+
+### 📖 Readability Boost
+- **Accent-Tinted Text** – Automatically tints secondary text (labels, weights, descriptions) with your accent color for a professional "book" feel.
+- **High-Contrast Shadows** – Injects dual-layer text shadows across the entire sheet to ensure legibility against any background texture.
+- **Bold Modifiers** – Forces HP modifiers and sign-values (+/-) to be extra bold and visible.
+
+### 🎭 Immersive Effects
+- **Health Orb Layout** – A dynamic, glowing 3D health sphere that replaces the standard HP box. The red liquid inside rises and falls based on your current health percentage.
+- **Dynamic Health Vignette** – A reactive red border that pulses when your character is "Bloodied" (below 50% HP) or "Critical" (below 25% HP).
+- **Particle Engine** – A high-performance canvas overlay with multiple effects: *Clockwork Gears*, *Autumn Leaves*, *Eldritch Sparks*, *Holy Light*, *Rain*, and more.
+- **Item Rarity Auras** – Adds magical glows and specific text-styling to items in your inventory based on their rarity (Legendary items pulse with gold, Artifacts cycle through rainbows).
+
+---
+
+## 🚀 Installation
+
+### For Chrome
+1. Download or clone this repository.
+2. Open `chrome://extensions/`.
+3. Enable **Developer Mode** (top-right toggle).
+4. Click **Load Unpacked** and select the extension folder.
+
+### For Firefox
+1. Download or clone this repository.
+2. Open `about:addons`.
+3. Click the gear icon and select **Debug Add-ons**.
+4. Click **Load Temporary Add-on** and select the `manifest.json`.
+
+---
+
+## 🛠️ Usage
+1. Open any **D&D Beyond Character Sheet** (`https://www.dndbeyond.com/characters/XXXXXX`).
+2. Click the **Injected Customizer Icon** in the top header (near the "Short Rest" button).
+3. Use the sidebar to tweak your environment, colors, and effects in real-time.
+4. Settings are **saved automatically** per character ID!
+
+---
+
+## 📜 License
+This project is licensed under the **MIT License**. 
+
+*Note: This is a highly modified fork of the original D&D Beyond Backdrop Replacer, enhanced with advanced CSS/JS logic for a modern RPG interface.*

@@ -1366,7 +1366,7 @@ function updateSavedColors(){
     const characterID = getCharacterID();
     if (!characterID) return;
     
-    const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'cursorPack', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'rarityAuras'];
+    const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'rarityAuras'];
     types.forEach(type => {
         storage.get(`${type}_${characterID}`).then((data) => {
             const val = data[`${type}_${characterID}`];
@@ -1375,7 +1375,6 @@ function updateSavedColors(){
                 else if (type === 'header') applyHeaderColor(val);
                 else if (type === 'border') applyBorderColor(val);
                 else if (type === 'accent') applyAccentColor(val);
-                else if (type === 'cursorPack') applyCursor(val);
                 else if (type === 'portraitShape') applyPortraitShape(val);
                 else if (type === 'customFont') applyFont(val);
                 else if (type === 'rarityAuras') applyRarityAuras();

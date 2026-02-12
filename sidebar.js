@@ -97,7 +97,6 @@ function setupEventListeners(sidebar) {
   const dynamicHealthToggle = sidebar.querySelector("#dynamicHealthToggle");
   const healthOrbToggle = sidebar.querySelector("#healthOrbToggle");
   const rarityAurasToggle = sidebar.querySelector("#rarityAurasToggle");
-  const cursorPackSelect = sidebar.querySelector("#cursorPackSelect");
   const checkboxColor = sidebar.querySelector("#checkboxColor");
   const checkboxGlow = sidebar.querySelector("#checkboxGlow");
   const checkboxShape = sidebar.querySelector("#checkboxShape");
@@ -188,17 +187,6 @@ function setupEventListeners(sidebar) {
     if (window.applyRarityAuras) window.applyRarityAuras();
   });
 
-  cursorPackSelect.addEventListener("change", (e) => {
-    saveColor(e.target.value, 'cursorPack');
-    if (window.applyCursor) window.applyCursor(e.target.value);
-  });
-
-  sidebar.querySelector("#resetCursor").addEventListener("click", () => {
-    cursorPackSelect.value = "default";
-    saveColor("default", "cursorPack");
-    if (window.applyCursor) window.applyCursor("default");
-  });
-
   const updateChecks = () => {
     saveColor(checkboxColor.value, 'checkboxColor');
     saveColor(checkboxGlow.value, 'checkboxGlow');
@@ -262,7 +250,7 @@ function setupEventListeners(sidebar) {
 
   sidebar.querySelector("#resetBtn").addEventListener("click", () => {
     if (confirm("Remove all customizations?")) {
-      ['background', 'header', 'border', 'accent', 'text1', 'text0', 'boxStyle', 'portraitShape', 'customFont', 'cursorPack', 'dynamicHealth'].forEach(removeColor);
+      ['background', 'header', 'border', 'accent', 'text1', 'text0', 'boxStyle', 'portraitShape', 'customFont', 'dynamicHealth'].forEach(removeColor);
       removeBackdrop();
       removeFrame();
       location.reload();
@@ -275,7 +263,7 @@ function updateColorPickers() {
   if (!characterID) return;
 
   const storage = typeof browser !== "undefined" ? browser.storage.local : chrome.storage.local;
-  const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'dynamicHealth', 'healthOrb', 'rarityAuras', 'cursorPack', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle'];
+  const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'dynamicHealth', 'healthOrb', 'rarityAuras', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle'];
   
   types.forEach(type => {
     storage.get(`${type}_${characterID}`).then(data => {
@@ -320,11 +308,6 @@ function updateColorPickers() {
       if (type === 'checkboxGlow') {
         const slider = document.getElementById("checkboxGlow");
         if (slider) slider.value = val;
-        return;
-      }
-      if (type === 'cursorPack') {
-        const select = document.getElementById("cursorPackSelect");
-        if (select) select.value = val;
         return;
       }
       if (type === 'dynamicHealth') {
