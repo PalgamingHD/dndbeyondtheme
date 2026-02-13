@@ -309,7 +309,9 @@ function applyHeaderColor(newColor) {
   const color = newColor.slice(0, 7);
   const headerBoxes = document.querySelectorAll('.ct-character-header-desktop');
   headerBoxes.forEach(el => {
-    el.setAttribute("style", "background:" + newColor + " !important; margin-top: 0 !important;");
+    el.style.setProperty("background", newColor, "important");
+    el.style.setProperty("border", "none", "important");
+    el.style.setProperty("margin-top", "0", "important");
     el.style.backdropFilter = 'none';
   });
 
@@ -320,21 +322,45 @@ function applyHeaderColor(newColor) {
     document.head.appendChild(style);
   }
    style.textContent = `
-    .ct-character-sheet {
+    /* Eliminate Top Gap */
+    .ct-character-sheet,
+    .ct-character-sheet__inner,
+    #site-main {
       margin-top: 0 !important;
       padding-top: 0 !important;
     }
-    .ct-character-sheet__inner {
-      padding-top: 0 !important;
+
+    /* Target the primary header and its background layers */
+    .ct-character-header-desktop,
+    .ct-character-header-desktop__background {
+        background: ${newColor} !important;
+        margin-top: 0 !important;
+        border: none !important;
     }
-    .ct-character-sheet::before,
-    .ct-character-sheet--dark-mode::before,
-    .ct-character-header-desktop::before {
+
+    /* Target potential grey boxes/dividers below the header */
+    .ct-character-header-desktop__group {
+        border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    /* The bleed fix for side gaps and top gaps */
+    .ct-character-header-desktop::before,
+    .ct-character-header-desktop::after {
       content: "" !important;
+      position: absolute !important;
+      top: -50px !important; /* Reach up to cover the site-main gap */
+      left: -50vw !important;
+      right: -50vw !important;
+      bottom: 0 !important;
       background: ${newColor} !important;
       background-image: none !important;
       opacity: 1 !important;
-      mix-blend-mode: normal !important;
+      z-index: -1 !important;
+    }
+
+    /* Force the character sheet container to be seamless */
+    .ct-character-sheet::before {
+        display: none !important; /* Hide original theme backgrounds */
     }
   `;
 }
@@ -461,12 +487,11 @@ function applyBorderColor(newColor) {
     document.querySelectorAll('.bo').forEach(el => {
         el.setAttribute("style", "fill:" + newColor + " !important;");
     });
-
-    document.documentElement.style.setProperty("--theme-color", newColor);
 }
 window.applyBorderColor = applyBorderColor;
 
 function applyAccentColor(newColor) {
+    const characterID = getCharacterID();
     document.documentElement.style.setProperty("--theme-color", newColor);
     
     document.querySelectorAll('.ct-character-header-desktop__button').forEach(element => {
@@ -478,59 +503,64 @@ function applyAccentColor(newColor) {
         diceToolbar.style.setProperty('--dice-color', newColor, 'important');
     }
 
-    // Global Readability Overrides
-    let styleEl = document.getElementById('customizer-readability-overrides');
-    if (!styleEl) {
-        styleEl = document.createElement('style');
-        styleEl.id = 'customizer-readability-overrides';
-        document.head.appendChild(styleEl);
+    // Accent-Tinted Text Logic (Global Tint)
+    let tintStyle = document.getElementById('customizer-accent-tint');
+    if (!tintStyle) {
+        tintStyle = document.createElement('style');
+        tintStyle.id = 'customizer-accent-tint';
+        document.head.appendChild(tintStyle);
     }
-
-    styleEl.innerHTML = `
-        /* GLOBAL READABILITY - Apply shadow to all text on the sheet */
-        .ct-character-sheet,
-        .ct-character-sheet *,
-        .ct-sidebar__portal,
-        .ct-sidebar__portal * {
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.9), 0px 0px 2px rgba(0,0,0,0.5) !important;
-        }
-
-        /* 1. Tinted & Bold - High-level Navigation & Important Labels */
-        .styles_tabButton__wvSLf,
-        .styles_weightSecondaryText__ezwvR,
-        .ct-character-sheet .ct-item-detail__header-secondary,
-        .ct-character-sheet .ddbc-item-name__rarity {
-            color: color-mix(in srgb, ${newColor}, white 70%) !important;
-            font-weight: 600 !important;
-        }
-
-        /* Active tab should be bright white */
-        .styles_tabButton__wvSLf[aria-checked="true"] {
-            color: white !important;
-            border-bottom-color: ${newColor} !important;
-        }
-
-        /* Update global gray variables for both light and dark modes */
-        .ct-character-sheet,
-        .ct-character-sheet--dark-mode {
-            --text-color-0: color-mix(in srgb, ${newColor}, white 70%) !important;
-        }
-
-        /* Modifier Signs (+ / -) High Visibility */
-        .styles_sign__NdR6X,
-        .styles_labelSignColor__Klmbs,
-        .ddbc-signed-number__sign,
-        .ct-signed-number__sign {
-            font-weight: 800 !important;
-            color: white !important;
-            text-shadow: 0px 0px 3px black, 1px 1px 2px black !important;
+    const tintColor = newColor.slice(0, 7) + 'cc'; // Slightly transparent
+    tintStyle.innerHTML = `
+        .ct-character-sheet__label, 
+        .ddbc-character-sub-header,
+        .ct-sidebar__header-label,
+        .ct-ability-summary__label,
+        .ct-skills__col--label,
+        .ct-saving-throws__label {
+            color: ${tintColor} !important;
         }
     `;
+
+    // Global Readability Overrides - Now Conditional
+    storage.get(`readabilityMode_${characterID}`).then(data => {
+        const enabled = data[`readabilityMode_${characterID}`] === 'true';
+        let styleEl = document.getElementById('customizer-readability-overrides');
+        
+        if (!enabled) {
+            if (styleEl) styleEl.innerHTML = '';
+            return;
+        }
+
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'customizer-readability-overrides';
+            document.head.appendChild(styleEl);
+        }
+
+        styleEl.innerHTML = `
+            /* GLOBAL READABILITY - Focus on contrast shadows only, avoiding SVGs */
+            .ct-character-sheet *:not(svg):not(path):not(circle):not(rect):not(polygon):not(image),
+            .ct-sidebar__portal *:not(svg):not(path):not(circle):not(rect):not(polygon):not(image) {
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.9), 0px 0px 2px rgba(0,0,0,0.5) !important;
+            }
+
+            /* Modifier Signs (+ / -) High Visibility */
+            .styles_sign__NdR6X,
+            .styles_labelSignColor__Klmbs,
+            .ddbc-signed-number__sign,
+            .ct-signed-number__sign {
+                font-weight: 800 !important;
+                color: white !important;
+                text-shadow: 0px 0px 3px black, 1px 1px 2px black !important;
+            }
+        `;
+    });
 }
 window.applyAccentColor = applyAccentColor;
 
 function applyTextColor(newColor, num) {
-    const styleId = (num) ? 'whiteTextColorStyle' : 'grayTextColorStyle';
+    const styleId = 'globalTextColorStyle';
     let styleEl = document.getElementById(styleId);
     if (!styleEl) {
         styleEl = document.createElement('style');
@@ -538,11 +568,21 @@ function applyTextColor(newColor, num) {
         document.head.appendChild(styleEl);
     }
     
-    // Apply to both standard and dark mode versions
+    // Targeted variables and selector to avoid breaking icons and rarity colors
     styleEl.innerHTML = `
+        :root {
+            --text-color-primary: ${newColor} !important;
+            --text-color-secondary: ${newColor}aa !important;
+            --text-color-0: ${newColor} !important;
+            --text-color-1: ${newColor} !important;
+            --text-color-2: ${newColor} !important;
+            --text-color-3: ${newColor} !important;
+        }
         .ct-character-sheet,
-        .ct-character-sheet--dark-mode { 
-            --text-color-${num}: ${newColor} !important; 
+        .ct-character-sheet *:not(svg):not(path):not(circle):not(rect):not(polygon):not(image):not([class*="common"]):not([class*="rare"]):not([class*="legendary"]):not([class*="artifact"]):not([class*="uncommon"]),
+        .ct-sidebar__portal,
+        .ct-sidebar__portal *:not(svg):not(path):not(circle):not(rect):not(polygon):not(image):not([class*="common"]):not([class*="rare"]):not([class*="legendary"]):not([class*="artifact"]):not([class*="uncommon"]) { 
+            color: ${newColor} !important;
         }
     `;
 }
@@ -585,6 +625,7 @@ function applyRarityAuras() {
                 color: #a335ee !important;
                 text-shadow: 0 0 8px #a335ee, 0 0 12px #a335ee66, 1px 1px 1px black !important;
                 font-weight: bold !important;
+                animation: legendary-text-pulse 2s infinite alternate !important;
             }
 
             /* Legendary - Gold/Orange Pulse */
@@ -617,6 +658,316 @@ function applyRarityAuras() {
     });
 }
 window.applyRarityAuras = applyRarityAuras;
+
+// ----- Colorful RPG Icon Engine (Hand-Drawn Style) -----
+const itemIconMap = {
+    weapon: "https://wow.zamimg.com/images/wow/icons/large/inv_sword_04.jpg",
+    dagger: "https://wow.zamimg.com/images/wow/icons/large/inv_weapon_shortblade_05.jpg",
+    axe: "https://wow.zamimg.com/images/wow/icons/large/inv_axe_01.jpg",
+    bow: "https://wow.zamimg.com/images/wow/icons/large/inv_weapon_bow_07.jpg",
+    hammer: "https://wow.zamimg.com/images/wow/icons/large/inv_hammer_04.jpg",
+    armor: "https://wow.zamimg.com/images/wow/icons/large/inv_chest_plate_12.jpg",
+    shield: "https://wow.zamimg.com/images/wow/icons/large/inv_shield_04.jpg",
+    potion: "https://wow.zamimg.com/images/wow/icons/large/inv_potion_51.jpg",
+    scroll: "https://wow.zamimg.com/images/wow/icons/large/inv_scroll_03.jpg",
+    wand: "https://wow.zamimg.com/images/wow/icons/large/inv_wand_01.jpg",
+    gear: "https://wow.zamimg.com/images/wow/icons/large/inv_misc_bag_08.jpg",
+    quiver: "https://wow.zamimg.com/images/wow/icons/large/inv_misc_bag_11.jpg",
+    pouch: "https://wow.zamimg.com/images/wow/icons/large/inv_misc_pouch_01.jpg",
+    clothes: "https://wow.zamimg.com/images/wow/icons/large/inv_chest_cloth_17.jpg",
+    torch: "https://game-icons.net/icons/ffffff/000000/1x1/lorc/torch.png",
+    magic: "https://wow.zamimg.com/images/wow/icons/large/inv_jewelry_talisman_07.jpg",
+    ring: "https://wow.zamimg.com/images/wow/icons/large/inv_jewelry_ring_03.jpg",
+    default: "https://game-icons.net/icons/ffffff/000000/1x1/lorc/locked-chest.png"
+};
+
+function getIconForType(typeStr) {
+    const t = typeStr.toLowerCase();
+    if (t.includes('torch')) return itemIconMap.torch;
+    if (t.includes('dagger')) return itemIconMap.dagger;
+    if (t.includes('axe') || t.includes('halberd')) return itemIconMap.axe;
+    if (t.includes('bow') || t.includes('crossbow')) return itemIconMap.bow;
+    if (t.includes('hammer') || t.includes('mace') || t.includes('club')) return itemIconMap.hammer;
+    if (t.includes('sword') || t.includes('rapier') || t.includes('scimitar') || t.includes('weapon')) return itemIconMap.weapon;
+    if (t.includes('shield')) return itemIconMap.shield;
+    if (t.includes('armor') || t.includes('plate') || t.includes('mail')) return itemIconMap.armor;
+    if (t.includes('clothes') || t.includes('robe') || t.includes('tunic') || t.includes('outerwear')) return itemIconMap.clothes;
+    if (t.includes('quiver') || t.includes('case')) return itemIconMap.quiver;
+    if (t.includes('pouch')) return itemIconMap.pouch;
+    if (t.includes('backpack') || t.includes('gear') || t.includes('kit') || t.includes('tools') || t.includes('container')) return itemIconMap.gear;
+    if (t.includes('potion') || t.includes('vial') || t.includes('flask')) return itemIconMap.potion;
+    if (t.includes('scroll')) return itemIconMap.scroll;
+    if (t.includes('wand')) return itemIconMap.wand;
+    if (t.includes('ring')) return itemIconMap.ring;
+    if (t.includes('wondrous') || t.includes('magic') || t.includes('artifact')) return itemIconMap.magic;
+    return itemIconMap.default;
+}
+
+function injectItemIcons() {
+    const items = document.querySelectorAll('.ct-inventory-item');
+    items.forEach(item => {
+        if (item.querySelector('.custom-item-icon-img')) return;
+
+        const nameEl = item.querySelector('.styles_itemName__xLCwW, .ct-inventory-item__name');
+        const meta = item.querySelector('.ct-inventory-item__meta-item, .ct-attunement-slot__meta-item, .ct-attunement__meta-item');
+        
+        const searchText = (nameEl ? nameEl.innerText : "") + " " + (meta ? meta.innerText : "");
+        const iconSrc = getIconForType(searchText);
+        
+        const img = document.createElement('img');
+        img.className = 'custom-item-icon-img';
+        img.src = iconSrc;
+
+        // Smart Filtering: JPGs (WoW) are colorful, PNGs (Game-Icons) are tinted
+        if (iconSrc.endsWith('.png')) {
+            img.style.filter = `drop-shadow(0 0 5px var(--theme-color)) invert(1) sepia(100%) saturate(1000%) hue-rotate(var(--theme-hue, 0deg)) brightness(1.2)`;
+        } else {
+            img.style.filter = `drop-shadow(0 0 5px rgba(0,0,0,0.5))`;
+        }
+        
+        const nameContainer = item.querySelector('.ct-inventory-item__name, .ct-attunement-slot__name, .ct-attunement__item-name');
+        if (nameContainer) {
+            item.insertBefore(img, nameContainer.nextSibling);
+        }
+    });
+}
+
+function applyInventoryGrid(enabled) {
+    const styleId = 'customizer-inventory-grid-style';
+    let styleEl = document.getElementById(styleId);
+    
+    if (!enabled) {
+        if (styleEl) styleEl.remove();
+        document.querySelectorAll('.custom-item-icon-img').forEach(el => el.remove());
+        return;
+    }
+
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+    }
+
+    styleEl.innerHTML = `
+        .ct-inventory__row-header { display: none !important; }
+
+        .ct-inventory__items {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+            gap: 15px !important;
+            padding: 15px !important;
+            background: none !important;
+        }
+
+        .ct-inventory__items .ct-inventory-item {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 130px !important;
+            height: 150px !important;
+            min-height: 150px !important;
+            background: #1a1a1a !important;
+            border: 2px solid #333 !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            overflow: hidden !important;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8) !important;
+        }
+
+        .ct-inventory__items .ct-inventory-item:hover {
+            border-color: var(--theme-color) !important;
+            box-shadow: 0 0 15px var(--theme-color) !important;
+            background: #222 !important;
+            z-index: 5 !important;
+        }
+
+        .ct-inventory-item__action,
+        .ct-inventory-item__meta,
+        .ct-inventory-item__cost,
+        .ct-inventory-item__notes,
+        .ct-inventory-item__heading-action {
+            display: none !important;
+        }
+
+        .ct-inventory-item__name {
+            display: block !important;
+            height: 45px !important;
+            overflow: hidden !important;
+            text-align: center !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            line-height: 1.2 !important;
+            color: #eee !important;
+            border: none !important;
+            padding: 0 !important;
+            margin-bottom: 5px !important;
+        }
+
+        .custom-item-icon-img {
+            width: 64px !important;
+            height: 64px !important;
+            border: 2px solid #000 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 0 5px rgba(0,0,0,1) !important;
+            object-fit: cover !important;
+            margin-bottom: 5px !important;
+        }
+
+        .ct-inventory-item:hover .custom-item-icon-img {
+            border-color: var(--theme-color) !important;
+        }
+
+        .ct-inventory-item__weight,
+        .ct-inventory-item__quantity {
+            display: block !important;
+            position: absolute !important;
+            bottom: 8px !important;
+            font-size: 10px !important;
+            color: #aaa !important;
+            font-family: monospace !important;
+        }
+
+        .ct-inventory-item__weight { left: 10px !important; }
+        .ct-inventory-item__quantity { right: 10px !important; }
+
+        .ct-inventory-item__weight::before { content: "W:"; color: var(--theme-color); margin-right: 2px; }
+        .ct-inventory-item__quantity::before { content: "Q:"; color: var(--theme-color); margin-right: 2px; }
+
+        .ct-content-group__header {
+            border-bottom: 2px solid var(--theme-color) !important;
+            margin-bottom: 10px !important;
+        }
+    `;
+
+    injectItemIcons();
+}
+
+function applyInventoryGrid(enabled) {
+    const styleId = 'customizer-inventory-grid-style';
+    let styleEl = document.getElementById(styleId);
+    
+    if (!enabled) {
+        if (styleEl) styleEl.remove();
+        document.querySelectorAll('.custom-item-icon-img').forEach(el => el.remove());
+        return;
+    }
+
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+    }
+
+    styleEl.innerHTML = `
+        .ct-inventory__row-header { display: none !important; }
+
+        .ct-inventory__items {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+            gap: 12px !important;
+            padding: 10px !important;
+            background: none !important;
+        }
+
+        .ct-inventory__items .ct-inventory-item {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 130px !important;
+            height: 130px !important;
+            min-height: 130px !important;
+            background: rgba(0,0,0,0.6) !important;
+            border: 2px solid var(--theme-color) !important;
+            border-radius: 10px !important;
+            padding: 10px !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            overflow: hidden !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .ct-inventory__items .ct-inventory-item:hover {
+            transform: translateY(-5px) scale(1.02) !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8), 0 0 12px var(--theme-color) !important;
+            background: rgba(255,255,255,0.05) !important;
+            z-index: 5 !important;
+        }
+
+        .ct-inventory-item__action,
+        .ct-inventory-item__meta,
+        .ct-inventory-item__cost,
+        .ct-inventory-item__notes,
+        .ct-inventory-item__heading-action {
+            display: none !important;
+        }
+
+        .ct-inventory-item__name {
+            display: block !important;
+            height: 40px !important;
+            overflow: hidden !important;
+            text-align: center !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            text-transform: uppercase !important;
+            line-height: 1.2 !important;
+            color: #fff !important;
+            border: none !important;
+            padding: 0 !important;
+            z-index: 2 !important;
+        }
+
+        /* The Image Icon Style */
+        .custom-item-icon-img {
+            width: 50px !important;
+            height: 50px !important;
+            margin: 5px 0 !important;
+            object-fit: contain !important;
+            pointer-events: none !important;
+            z-index: 2 !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        .ct-inventory-item:hover .custom-item-icon-img {
+            transform: scale(1.1) rotate(5deg) !important;
+        }
+
+        .ct-inventory-item__weight,
+        .ct-inventory-item__quantity {
+            display: block !important;
+            position: absolute !important;
+            bottom: 8px !important;
+            font-size: 10px !important;
+            color: var(--theme-color) !important;
+            font-family: monospace !important;
+            border: none !important;
+            background: none !important;
+            padding: 0 !important;
+            width: auto !important;
+            z-index: 2 !important;
+        }
+
+        .ct-inventory-item__weight { left: 10px !important; }
+        .ct-inventory-item__quantity { right: 10px !important; }
+
+        .ct-inventory-item__weight::before { content: "W:"; font-weight: bold; }
+        .ct-inventory-item__quantity::before { content: "Q:"; font-weight: bold; }
+
+        .ct-content-group__header {
+            border-bottom: 2px solid var(--theme-color) !important;
+            background: rgba(0,0,0,0.2) !important;
+            margin-bottom: 10px !important;
+        }
+    `;
+
+    injectItemIcons();
+}
+window.applyInventoryGrid = applyInventoryGrid;
 
 // ----- Save Functions -----
 
@@ -1366,7 +1717,7 @@ function updateSavedColors(){
     const characterID = getCharacterID();
     if (!characterID) return;
     
-    const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'rarityAuras'];
+    const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'rarityAuras', 'inventoryGrid', 'readabilityMode'];
     types.forEach(type => {
         storage.get(`${type}_${characterID}`).then((data) => {
             const val = data[`${type}_${characterID}`];
@@ -1378,6 +1729,14 @@ function updateSavedColors(){
                 else if (type === 'portraitShape') applyPortraitShape(val);
                 else if (type === 'customFont') applyFont(val);
                 else if (type === 'rarityAuras') applyRarityAuras();
+                else if (type === 'inventoryGrid') applyInventoryGrid(val === 'true');
+                else if (type === 'readabilityMode' && val === 'true') {
+                    // Re-trigger accent to apply readability CSS if accent exists
+                    storage.get(`accent_${characterID}`).then(acData => {
+                        const ac = acData[`accent_${characterID}`] || '#be1e2dff';
+                        applyAccentColor(ac);
+                    });
+                }
                 else if (type === 'checkboxColor') {
                     if (val) {
                         Promise.all([
@@ -1420,6 +1779,11 @@ const initialize = () => {
     updateSavedColors();
     checkHealth();
     applyRarityAuras();
+    
+    const characterID = getCharacterID();
+    storage.get(`inventoryGrid_${characterID}`).then(data => {
+        if (data[`inventoryGrid_${characterID}`] === 'true') applyInventoryGrid(true);
+    });
 };
 
 if (document.readyState === "complete" || document.readyState === "interactive") {
@@ -1444,6 +1808,11 @@ const observer = new MutationObserver(debounce(() => {
     checkHealth();
     updateSavedColors();
     applyRarityAuras();
+
+    const characterID = getCharacterID();
+    storage.get(`inventoryGrid_${characterID}`).then(data => {
+        if (data[`inventoryGrid_${characterID}`] === 'true') applyInventoryGrid(true);
+    });
 }, 200));
 
 observer.observe(document.body, { childList: true, subtree: true });

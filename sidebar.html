@@ -134,13 +134,14 @@
                             </select>
                             <button id="resetFont" class="remove-btn" style="margin-top: 5px;">Reset Font</button>
 
-                            <label style="margin-top: 15px;">Primary Text Color:</label>
-                            <input type="color" id="colorText1">
-                            <button id="removeText1" class="remove-btn" style="margin-top: 5px;">Reset</button>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; margin-bottom: 10px;">
+                                <label>Readability Shadows:</label>
+                                <input type="checkbox" id="readabilityToggle" style="width: 20px; height: 20px;">
+                            </div>
 
-                            <label style="margin-top: 10px;">Secondary Text Color:</label>
-                            <input type="color" id="colorText0">
-                            <button id="removeText2" class="remove-btn" style="margin-top: 5px;">Reset</button>
+                            <label style="margin-top: 15px;">Global Text Color:</label>
+                            <input type="color" id="colorText1">
+                            <button id="removeText1" class="remove-btn" style="margin-top: 5px;">Reset Color</button>
                         </div>
                     </div>
 
@@ -194,6 +195,11 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                             <label>Item Rarity Auras:</label>
                             <input type="checkbox" id="rarityAurasToggle" style="width: 20px; height: 20px;">
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <label>Inventory Grid Layout:</label>
+                            <input type="checkbox" id="inventoryGridToggle" style="width: 20px; height: 20px;">
                         </div>
                         
                         <div class="color-picker-group" style="margin-top: 15px;">

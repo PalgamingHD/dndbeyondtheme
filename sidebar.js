@@ -3,6 +3,7 @@ function injectFileSelector() {
   if (existingSidebar) {
     const isVisible = existingSidebar.style.transform === "translateX(0%)";
     existingSidebar.style.transform = isVisible ? "translateX(100%)" : "translateX(0%)";
+    if (!isVisible) updateColorPickers(existingSidebar);
     return;
   }
 
@@ -42,7 +43,7 @@ function injectFileSelector() {
       setupEventListeners(container);
 
       // Initialize values
-      setTimeout(updateColorPickers, 100);
+      setTimeout(() => updateColorPickers(container), 50);
 
       // Slide in
       setTimeout(() => {
@@ -102,11 +103,18 @@ function setupEventListeners(sidebar) {
   const checkboxShape = sidebar.querySelector("#checkboxShape");
   const portraitShapeSelect = sidebar.querySelector("#portraitShapeSelect");
   const fontSelect = sidebar.querySelector("#fontSelect");
+  const readabilityToggle = sidebar.querySelector("#readabilityToggle");
   const boxStyleSelect = sidebar.querySelector("#boxStyleSelect");
+  const inventoryGridToggle = sidebar.querySelector("#inventoryGridToggle");
 
   portraitShapeSelect.addEventListener("change", (e) => {
     saveColor(e.target.value, 'portraitShape');
     if (window.applyPortraitShape) window.applyPortraitShape(e.target.value);
+  });
+
+  inventoryGridToggle.addEventListener("change", (e) => {
+    saveColor(e.target.checked ? 'true' : 'false', 'inventoryGrid');
+    if (window.applyInventoryGrid) window.applyInventoryGrid(e.target.checked);
   });
 
   boxStyleSelect.addEventListener("change", (e) => {
@@ -203,6 +211,13 @@ function setupEventListeners(sidebar) {
     if (window.applyFont) window.applyFont(e.target.value);
   });
 
+  readabilityToggle.addEventListener("change", (e) => {
+    saveColor(e.target.checked ? 'true' : 'false', 'readabilityMode');
+    // Re-apply accent to update readability CSS
+    const color = sidebar.querySelector("#colorInputAc").value;
+    if (window.applyAccentColor) window.applyAccentColor(color);
+  });
+
   sidebar.querySelector("#resetFont").addEventListener("click", () => {
     fontSelect.value = "default";
     saveColor("default", "customFont");
@@ -235,22 +250,16 @@ function setupEventListeners(sidebar) {
     applyTextColor(e.target.value, 1);
   });
 
-  sidebar.querySelector("#colorText0").addEventListener("input", (e) => {
-    saveColor(e.target.value, 'text0');
-    applyTextColor(e.target.value, 0);
-  });
-
   // Reset Buttons
   sidebar.querySelector("#removeColorBg").addEventListener("click", () => { removeColor("background"); location.reload(); });
   sidebar.querySelector("#removeColorHd").addEventListener("click", () => { removeColor("header"); location.reload(); });
   sidebar.querySelector("#removeColorBo").addEventListener("click", () => { removeColor("border"); location.reload(); });
   sidebar.querySelector("#removeColorAc").addEventListener("click", () => { removeColor("accent"); location.reload(); });
   sidebar.querySelector("#removeText1").addEventListener("click", () => { removeColor("text1"); location.reload(); });
-  sidebar.querySelector("#removeText2").addEventListener("click", () => { removeColor("text0"); location.reload(); });
 
   sidebar.querySelector("#resetBtn").addEventListener("click", () => {
     if (confirm("Remove all customizations?")) {
-      ['background', 'header', 'border', 'accent', 'text1', 'text0', 'boxStyle', 'portraitShape', 'customFont', 'dynamicHealth'].forEach(removeColor);
+      ['background', 'header', 'border', 'accent', 'text1', 'boxStyle', 'portraitShape', 'customFont', 'dynamicHealth', 'readabilityMode'].forEach(removeColor);
       removeBackdrop();
       removeFrame();
       location.reload();
@@ -258,76 +267,86 @@ function setupEventListeners(sidebar) {
   });
 }
 
-function updateColorPickers() {
+function updateColorPickers(parent = document) {
   const characterID = getCharacterID();
   if (!characterID) return;
 
   const storage = typeof browser !== "undefined" ? browser.storage.local : chrome.storage.local;
-  const types = ['background', 'header', 'border', 'accent', 'text1', 'text0', 'particleType', 'particleIntensity', 'particleColor', 'dynamicHealth', 'healthOrb', 'rarityAuras', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle'];
+  const types = ['background', 'header', 'border', 'accent', 'text1', 'particleType', 'particleIntensity', 'particleColor', 'dynamicHealth', 'healthOrb', 'rarityAuras', 'inventoryGrid', 'checkboxColor', 'checkboxGlow', 'checkboxShape', 'portraitShape', 'customFont', 'boxStyle', 'readabilityMode'];
   
   types.forEach(type => {
     storage.get(`${type}_${characterID}`).then(data => {
       const val = data[`${type}_${characterID}`];
       if (!val) return;
 
+      if (type === 'readabilityMode') {
+        const toggle = parent.querySelector("#readabilityToggle");
+        if (toggle) toggle.checked = val === 'true';
+        return;
+      }
+      if (type === 'inventoryGrid') {
+        const toggle = parent.querySelector("#inventoryGridToggle");
+        if (toggle) toggle.checked = val === 'true';
+        return;
+      }
       if (type === 'healthOrb') {
-        const toggle = document.getElementById("healthOrbToggle");
+        const toggle = parent.querySelector("#healthOrbToggle");
         if (toggle) toggle.checked = val === 'true';
         return;
       }
       if (type === 'rarityAuras') {
-        const toggle = document.getElementById("rarityAurasToggle");
+        const toggle = parent.querySelector("#rarityAurasToggle");
         if (toggle) toggle.checked = val === 'true';
         return;
       }
       if (type === 'boxStyle') {
-        const select = document.getElementById("boxStyleSelect");
+        const select = parent.querySelector("#boxStyleSelect");
         if (select) select.value = val;
         return;
       }
       if (type === 'customFont') {
-        const select = document.getElementById("fontSelect");
+        const select = parent.querySelector("#fontSelect");
         if (select) select.value = val;
         return;
       }
       if (type === 'portraitShape') {
-        const select = document.getElementById("portraitShapeSelect");
+        const select = parent.querySelector("#portraitShapeSelect");
         if (select) select.value = val;
         return;
       }
       if (type === 'checkboxShape') {
-        const select = document.getElementById("checkboxShape");
+        const select = parent.querySelector("#checkboxShape");
         if (select) select.value = val;
         return;
       }
       if (type === 'checkboxColor') {
-        const input = document.getElementById("checkboxColor");
+        const input = parent.querySelector("#checkboxColor");
         if (input) input.value = val;
         return;
       }
       if (type === 'checkboxGlow') {
-        const slider = document.getElementById("checkboxGlow");
+        const slider = parent.querySelector("#checkboxGlow");
         if (slider) slider.value = val;
         return;
       }
       if (type === 'dynamicHealth') {
-        const toggle = document.getElementById("dynamicHealthToggle");
+        const toggle = parent.querySelector("#dynamicHealthToggle");
         if (toggle) toggle.checked = val === 'true';
         return;
       }
 
       if (type === 'particleType') {
-        const select = document.getElementById("particleEffectType");
+        const select = parent.querySelector("#particleEffectType");
         if (select) select.value = val;
         return;
       }
       if (type === 'particleIntensity') {
-        const slider = document.getElementById("particleIntensity");
+        const slider = parent.querySelector("#particleIntensity");
         if (slider) slider.value = val;
         return;
       }
       if (type === 'particleColor') {
-        const pColor = document.getElementById("particleColor");
+        const pColor = parent.querySelector("#particleColor");
         if (pColor) pColor.value = val;
         return;
       }
@@ -345,11 +364,11 @@ function updateColorPickers() {
         case 'text0': inputId = 'colorText0'; break;
       }
 
-      const input = document.getElementById(inputId);
+      const input = parent.querySelector(`#${inputId}`);
       if (input) input.value = hex;
 
       if (type === 'background' || type === 'header' || type === 'border') {
-        const alphaInput = document.getElementById(inputId.replace('color', 'alpha'));
+        const alphaInput = parent.querySelector(`#${inputId.replace('color', 'alpha')}`);
         if (alphaInput) alphaInput.value = Math.round((alpha / 255) * 100);
       }
     });
