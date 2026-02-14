@@ -28,7 +28,7 @@ D&D Beyond Character Customizer is a browser extension for Chrome and Firefox de
 * **Bold Modifiers:** Enhances the visibility of HP modifiers and numerical sign-values.
 
 ### Immersive Effects
-* **Health Orb Layout:** Replaces the standard HP box with a dynamic, glowing 3D sphere that reflects current health percentages.
+* **Health Orb Layout:** Replaces the standard HP box with a dynamic orb that reflects current health percentages.
 * **Dynamic Health Vignette:** A reactive border effect that pulses when a character is Bloodied (below 50% HP) or Critical (below 25% HP).
 * **Particle Engine:** A high-performance overlay featuring effects such as Clockwork Gears, Autumn Leaves, Eldritch Sparks, and Weather effects.
 * **Item Rarity Auras:** Adds visual glows and unique typography to inventory items based on their rarity level.
@@ -65,3 +65,4 @@ D&D Beyond Character Customizer is a browser extension for Chrome and Firefox de
 This project is licensed under the MIT License.
 
 Note: This project is a modified version of the D&D Beyond Backdrop Replacer, featuring enhanced CSS and JavaScript logic for an updated user interface.
+
