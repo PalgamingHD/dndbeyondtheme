@@ -58,21 +58,6 @@ function setupEventListeners(sidebar) {
     sidebar.style.transform = "translateX(100%)";
   });
 
-  // Rainbow Mode
-  const rainbowBtn = sidebar.querySelector('#rainbowModeBtn');
-  rainbowBtn.addEventListener('click', function() {
-    if (this.value === '1') {
-      startRainbowMode();
-      this.value = '0';
-      this.textContent = 'Party Time!';
-    } else {
-      stopRainbowMode();
-      this.value = '1';
-      this.textContent = 'Party Time?';
-      this.style.backgroundColor = '';
-    }
-  });
-
   // Backdrop
   sidebar.querySelector("#saveBackdropBtn").addEventListener("click", () => {
     saveBackdrop(sidebar.querySelector("#backdropFileInput"));

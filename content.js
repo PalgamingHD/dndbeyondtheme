@@ -265,16 +265,49 @@ function applyBackgroundColor(newColor) {
             const parent = box.parentElement;
             
             // RESET
-            parent.style.backdropFilter = 'none';
-            parent.style.webkitBackdropFilter = 'none';
+            box.style.backdropFilter = 'none';
+            box.style.webkitBackdropFilter = 'none';
+            box.style.clipPath = 'none';
             parent.style.backgroundImage = 'none';
             parent.style.backgroundSize = 'cover';
-            if (allChildren[0]) allChildren[0].setAttribute("fill", newColor);
+            
+            // Remove any existing frosted layers from the parent to prevent stacking/displacement
+            const oldLayer = parent.querySelector('.frosted-glass-layer');
+            if (oldLayer) oldLayer.remove();
+
+            if (allChildren[0]) {
+                allChildren[0].setAttribute("fill", newColor);
+                allChildren[0].style.visibility = 'visible';
+            }
 
             if (style === 'frosted') {
-                parent.style.backdropFilter = 'blur(12px) brightness(1.1) contrast(1.1)';
-                parent.style.webkitBackdropFilter = 'blur(12px) brightness(1.1) contrast(1.1)';
-                if (allChildren[0]) allChildren[0].setAttribute("fill", newColor.slice(0, 7) + '44');
+                if (allChildren[0]) {
+                    const d = allChildren[0].getAttribute("d") || 
+                              (allChildren[0].getAttribute("points") ? "M " + allChildren[0].getAttribute("points").replace(/,/g, ' ').trim() + " Z" : null);
+                    
+                    if (d) {
+                        // Create a specific blur layer as a sibling to the SVG
+                        const blurLayer = document.createElement('div');
+                        blurLayer.className = 'frosted-glass-layer';
+                        blurLayer.style.position = 'absolute';
+                        blurLayer.style.inset = '0';
+                        blurLayer.style.zIndex = '0'; 
+                        blurLayer.style.pointerEvents = 'none';
+                        blurLayer.style.backdropFilter = 'blur(12px) brightness(1.1)';
+                        blurLayer.style.webkitBackdropFilter = 'blur(12px) brightness(1.1)';
+                        blurLayer.style.clipPath = `path("${d}")`;
+                        
+                        if (window.getComputedStyle(parent).position === 'static') {
+                            parent.style.position = 'relative';
+                        }
+                        
+                        // Insert behind everything in the parent
+                        parent.insertBefore(blurLayer, parent.firstChild);
+                        
+                        // Ensure original SVG path has the correct tint and transparency
+                        allChildren[0].setAttribute("fill", newColor);
+                    }
+                }
             } else if (style === 'parchment') {
                 if (allChildren[0]) {
                     allChildren[0].setAttribute("fill", 'url(#pattern-parchment)');
@@ -1771,6 +1804,7 @@ function updateSavedColors(){
         });
     });
 }
+window.updateSavedColors = updateSavedColors;
 
 const initialize = () => {
     applyBackdrop();
